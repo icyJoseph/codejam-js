@@ -5,6 +5,8 @@ const rl = readline.createInterface(process.stdin, process.stdout);
 const caseTracker = {
   numberOfTests: null,
   count: null,
+  problems: [],
+  results: [],
   inc() {
     this.count = this.count === null ? 1 : this.count + 1;
   },
@@ -15,6 +17,12 @@ const caseTracker = {
     const current = this.count;
     this.inc();
     return current;
+  },
+  addProblem(problem) {
+    this.problems = [...this.problems, problem];
+  },
+  add(result) {
+    this.results = [...this.results, result];
   }
 };
 
@@ -22,8 +30,8 @@ function oddEvenSplit(arr) {
   return arr.reduce(
     ({ even, odd }, curr, index) => {
       return index % 2 === 0
-        ? { odd, even: [...even, curr] }
-        : { even, odd: [...odd, curr] };
+        ? { odd, even: [...even, parseInt(curr)] }
+        : { even, odd: [...odd, parseInt(curr)] };
     },
     { even: [], odd: [] }
   );
@@ -48,33 +56,38 @@ function interlaceOddEven(even, odd, step = 0) {
   return interlaceOddEven([secondEven, ...restEven], restOdd, step + 2);
 }
 
-function shouldEnd(caseNumber, rl) {
-  caseTracker.numberOfTests === caseNumber ? rl.close() : null;
+function sort(arr) {
+  return [...arr].sort((a, b) => a - b);
 }
 
 rl.on("line", function(line) {
   const lineNumber = caseTracker.get();
 
   if (!lineNumber) {
-    return caseTracker.set(parseInt(line));
+    caseTracker.set(parseInt(line));
   }
 
-  if (lineNumber % 2 === 0) {
-    const numbers = line.split(" ").map(num => parseInt(num));
+  if (lineNumber && lineNumber % 2 === 0) {
+    caseTracker.addProblem(line);
+  }
+
+  if (lineNumber / 2 === caseTracker.numberOfTests) {
+    return rl.close();
+  }
+}).on("close", function() {
+  caseTracker.problems.forEach((line, index) => {
+    const numbers = line.split(" ");
 
     const { even, odd } = oddEvenSplit(numbers);
 
-    const sortedEven = [...even].sort((a, b) => a - b);
-    const sortedOdd = [...odd].sort((a, b) => a - b);
+    const sortedEven = sort(even);
+    const sortedOdd = sort(odd);
 
     const result = interlaceOddEven(sortedEven, sortedOdd);
 
-    const caseNumber = parseInt(lineNumber / 2);
+    caseTracker.add(`Case #${index + 1}: ${result}`);
+  });
 
-    return (
-      console.log(`Case #${caseNumber}: ${result}`) || shouldEnd(caseNumber, rl)
-    );
-  }
-}).on("close", function() {
+  caseTracker.results.forEach(res => console.log(res));
   process.exit(0);
 });
