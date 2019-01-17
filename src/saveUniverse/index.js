@@ -73,6 +73,10 @@ function hackCommands(commands, shield, step = 0) {
   return step;
 }
 
+function shouldEnd(caseNumber, rl) {
+  caseTracker.numberOfTests === caseNumber ? rl.close() : null;
+}
+
 rl.on("line", function(line) {
   //code goes here
   const caseNumber = caseTracker.get();
@@ -87,7 +91,9 @@ rl.on("line", function(line) {
 
   const result = hackCommands(commands, shield);
 
-  return console.log(`case #${caseNumber}: ${result}`);
+  return (
+    console.log(`Case #${caseNumber}: ${result}`) || shouldEnd(caseNumber, rl)
+  );
 }).on("close", function() {
   process.exit(0);
 });
