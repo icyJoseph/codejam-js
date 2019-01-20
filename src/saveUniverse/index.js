@@ -3,6 +3,8 @@ const rl = readline.createInterface(process.stdin, process.stdout);
 
 // keeps track of the test case being solved
 const caseTracker = {
+  problems: [],
+  results: [],
   numberOfTests: null,
   count: null,
   inc() {
@@ -15,6 +17,12 @@ const caseTracker = {
     const current = this.count;
     this.inc();
     return current;
+  },
+  addProblem(problem) {
+    this.problems = [...this.problems, problem];
+  },
+  addResult(result) {
+    this.results = [...this.results, result];
   }
 };
 
@@ -73,10 +81,6 @@ function hackCommands(commands, shield, step = 0) {
   return step;
 }
 
-function shouldEnd(caseNumber, rl) {
-  caseTracker.numberOfTests === caseNumber ? rl.close() : null;
-}
-
 rl.on("line", function(line) {
   //code goes here
   const caseNumber = caseTracker.get();
@@ -85,15 +89,23 @@ rl.on("line", function(line) {
     return caseTracker.set(parseInt(line));
   }
 
-  const [stringShield, commands] = line.split(" ");
+  caseTracker.addProblem(line);
 
-  const shield = parseInt(stringShield);
-
-  const result = hackCommands(commands, shield);
-
-  return (
-    console.log(`Case #${caseNumber}: ${result}`) || shouldEnd(caseNumber, rl)
-  );
+  if (caseNumber === caseTracker.numberOfTests) {
+    return rl.close();
+  }
 }).on("close", function() {
+  caseTracker.problems.forEach((line, index) => {
+    const [stringShield, commands] = line.split(" ");
+
+    const shield = parseInt(stringShield);
+
+    const result = hackCommands(commands, shield);
+
+    caseTracker.addResult(`Case #${index + 1}: ${result}`);
+  });
+
+  caseTracker.results.forEach(result => console.log(result));
+
   process.exit(0);
 });
