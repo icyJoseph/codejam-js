@@ -37,23 +37,27 @@ function oddEvenSplit(arr) {
   );
 }
 
-function interlaceOddEven(even, odd, step = 0) {
-  const [firstEven, secondEven, ...restEven] = even;
-  const [firstOdd, ...restOdd] = odd;
+function getIndex(arr, index, fallback) {
+  return arr[index] !== undefined ? arr[index] : fallback;
+}
 
-  if (firstOdd < firstEven) {
-    return step;
-  }
-
-  if (firstOdd > secondEven) {
-    return step + 1;
-  }
-
-  if (restOdd.length === 0 || !secondEven) {
+function interlaceOddEven(even, odd, index = 0) {
+  if (index >= even.length) {
     return "OK";
   }
 
-  return interlaceOddEven([secondEven, ...restEven], restOdd, step + 2);
+  const first = getIndex(even, index);
+  const middle = getIndex(odd, index, first);
+  const last = getIndex(even, index + 1, middle || first);
+
+  if (first > middle) {
+    return 2 * index;
+  }
+  if (middle > last) {
+    return 2 * index + 1;
+  }
+
+  return interlaceOddEven(even, odd, index + 1);
 }
 
 function sort(arr) {
