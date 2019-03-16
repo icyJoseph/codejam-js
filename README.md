@@ -80,4 +80,4 @@ And we can see if our solution is working as expected.
 
 ## Submission
 
-To submit your solution, just go to CodeJam's website, navigate to the problem and select `Load File`. Then submit `build/<problemName>`, or just copy paste its contents into the CodeJam editor.
+To submit your solution, just go to Code Jam's website, navigate to the problem and select `Load File`. Then submit `build/<problemName>`, or just copy paste its contents into the Code Jam text editor.
