@@ -73,7 +73,7 @@ Test files should be named `problemName.in`. I have left two, but please generat
 With the solution placed in build and your test, file you can run your solution:
 
 ```bash
-    node runner <problemName/>
+node runner <problemName/>
 ```
 
 And we can see if our solution is working as expected.

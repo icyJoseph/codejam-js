@@ -7,18 +7,18 @@ const { exec, spawn } = require("child_process");
 const [name] = process.argv.slice(-1);
 const testPath = `tests/${name}.in`;
 const target = `build/${name}`;
-const expectedScriptName = "index.js";
+const expectedScriptName = `${name}.js`;
 
 // given the file name
 if (name) {
   fs.readFile(testPath, "utf-8", (err, tests) => {
     if (err) return console.log("Test file not found", err);
 
-    // test if build/name is a thing
-    fs.readdir(target, (err, files) => {
+    // check if build/name is a thing
+    fs.readdir(`build/`, (err, files) => {
       if (err) return console.log("Did you transpile?", err);
-      const [script] = files;
-      if (script === expectedScriptName) {
+      // check if the build has the expected script name
+      if (files.includes(expectedScriptName)) {
         // setup spawn
         const startTime = performance.now();
         const child = spawn("node", [target]);
@@ -39,7 +39,7 @@ if (name) {
         });
       } else {
         // Exit, there was a problem with the script name
-        console.log("Make sure the file script is named index.js");
+        console.log(`Make sure the file script exists as ${name}.js`);
       }
     });
   });
