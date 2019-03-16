@@ -1,15 +1,15 @@
 {
   "name": "codejam",
   "version": "1.0.0",
-  "description": "",
+  "description": "Solving codejam problems using ES6+",
   "main": "index.js",
   "scripts": {
     "start": "babel-node",
     "transpile": "babel src -d build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Joseph Chamochumbi",
+  "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",

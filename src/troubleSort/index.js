@@ -21,7 +21,7 @@ const caseTracker = {
   addProblem(problem) {
     this.problems = [...this.problems, problem];
   },
-  add(result) {
+  addResult(result) {
     this.results = [...this.results, result];
   }
 };
@@ -89,7 +89,7 @@ rl.on("line", function(line) {
 
     const result = interlaceOddEven(sortedEven, sortedOdd);
 
-    caseTracker.add(`Case #${index + 1}: ${result}`);
+    caseTracker.addResult(`Case #${index + 1}: ${result}`);
   });
 
   caseTracker.results.forEach(res => console.log(res));
