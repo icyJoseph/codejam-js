@@ -3,10 +3,9 @@ const { performance } = require("perf_hooks");
 const { exec, spawn } = require("child_process");
 
 // TODO: Perhaps we could trigger a transpile process from here
-
-const [name] = process.argv.slice(-1);
+const [name, src = "build"] = process.argv.slice(2);
 const testPath = `tests/${name}.in`;
-const target = `build/${name}`;
+const target = `${src}/${name}`;
 const expectedScriptName = `${name}.js`;
 
 // given the file name
@@ -15,7 +14,7 @@ if (name) {
     if (err) return console.log("Test file not found", err);
 
     // check if build/name is a thing
-    fs.readdir(`build/`, (err, files) => {
+    fs.readdir(`${src}/`, (err, files) => {
       if (err) return console.log("Did you transpile?", err);
       // check if the build has the expected script name
       if (files.includes(expectedScriptName)) {
