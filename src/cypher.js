@@ -90,26 +90,27 @@ const compare = (curr, ahead, behind, direction) => {
   const [a, b] = curr;
   // console.log("input", curr, behind, ahead, direction);
   if (!!behind) {
-    const [first, second] = behind;
+    const [behindFirst, behindSecond] = behind;
     if (direction === "right") {
       // we would want [first, second], [a,b], where a === second;
-      const ret = first === a ? [b, a] : [a, b];
+      const ret = behindFirst === a ? [b, a] : [a, b];
       return ret;
     }
     if (direction === "left") {
-      const ret = second === a ? [a, b] : [b, a];
+      // we would want [first, second], [a,b], where a === second;
+      const ret = behindSecond === a ? [a, b] : [b, a];
       return ret;
     }
   } else {
-    const [first, second] = ahead;
+    const [aheadFirst, aheadSecond] = ahead;
     if (direction === "right") {
       // we would want [first, second], [a,b], where a === second;
-      const ret = a === second ? curr : [b, a];
+      const ret = a === aheadSecond ? curr : [b, a];
       return ret;
     }
     if (direction === "left") {
       // we would want [b,a], [first, second], where a === first
-      const ret = b === first ? curr : [a, b];
+      const ret = b === aheadFirst ? curr : [a, b];
       return ret;
     }
   }
