@@ -2,11 +2,21 @@
 
 This repository features solutions to Google's code jam problems using ES6+.
 
+## CodeJam 2019
+
+Solved enough to pass to next round. My two solutions worked flawlessly on the first attempt, and also passed the hidden test cases.
+
+I've also solved problem 3, which now requires a small optimization for the large case, as of now it is taking too long.
+
 ## Motivation
 
 The Code Jam competition only supports nodejs `4.8.2` which creates a barrier of entry for someone who's writing modern javascript on a daily basis. We are just very much used to the syntax sugar and new functionality available to us.
 
 ## How does it work?
+
+> CodeJam 2019 has enabled nodejs v 11.13.0!
+
+That means that transpiling is no longer vital, however, we may want special language features and babel can still provide that. For instance, pipe operators.
 
 We setup babel as transpiler to help us convert our code to our target environment, that is, `4.8.2`.
 
