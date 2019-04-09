@@ -59,88 +59,47 @@ const alphabet = [
   "Z"
 ];
 
-const isPrime = num => {
-  for (let i = BigInt(2); i * i <= num; i++)
-    if (num % i === BigInt(0)) return false;
-  return num > 1;
-};
-
-const sieve = bigMax => {
-  let f0, f1;
-  for (let i = BigInt(2); i * i <= bigMax; i++) {
-    if (bigMax % i === BigInt(0)) {
-      if (isPrime(i)) {
-        f0 = i;
-        f1 = bigMax / i;
-        if (isPrime(f1)) {
-          break;
-        }
-      }
-    }
+// finds the greatest commont denominator between two numbers
+function greatestCommonDivisor(a, b) {
+  if (b === 0n) {
+    return a;
   }
-  return [f0, f1];
-};
+  return greatestCommonDivisor(b, a % b);
+}
 
-const head = ([head]) => head;
-const last = arr => head(arr.slice(-1));
-// check if they have the same elements in the same position
-const sameOrder = ([a, b], [c, d]) => a === c && b === d;
+// finds the index of the next element different than curr, in src, starting at start
+const findNextDifferentIndex = (curr, start, src) =>
+  src.findIndex((el, index) => el !== curr && index > start);
 
-const compare = (curr, ahead, behind, direction) => {
-  const [a, b] = curr;
-  // console.log("input", curr, behind, ahead, direction);
-  if (!!behind) {
-    const [behindFirst, behindSecond] = behind;
-    if (direction === "right") {
-      // we would want [first, second], [a,b], where a === second;
-      const ret = behindFirst === a ? [b, a] : [a, b];
-      return ret;
-    }
-    if (direction === "left") {
-      // we would want [first, second], [a,b], where a === second;
-      const ret = behindSecond === a ? [a, b] : [b, a];
-      return ret;
-    }
-  } else {
-    const [aheadFirst, aheadSecond] = ahead;
-    if (direction === "right") {
-      // we would want [first, second], [a,b], where a === second;
-      const ret = a === aheadSecond ? curr : [b, a];
-      return ret;
-    }
-    if (direction === "left") {
-      // we would want [b,a], [first, second], where a === first
-      const ret = b === aheadFirst ? curr : [a, b];
-      return ret;
-    }
-  }
-};
-
-const walker = direction => (prev, curr, index, src) => {
-  // start from the right to left => right
-  // start from left to right => left
-  const inc = direction === "right" ? -1 : +1;
-  const ahead = src[index + inc];
-  const behind = direction === "right" ? head(prev) : last(prev);
-  const result = compare(curr, ahead, behind, direction);
-  return direction === "right" ? [result, ...prev] : [...prev, result];
-};
-
+// reduce over the cyphers
+// if array accumulator, prev, is empty, find the
+// common pattern with the next element in src, which is different
+// than curr, and return factor, common, where factor is curr / common
+// if the array acculator, prev, is NOT empty, take the last element on it,
+// called last, and divide curr by last, add that to the accumulator and proceed
 const decodeCypher = (N, cyphers) => {
-  return cyphers
-    .reduce((prev, curr) => {
-      const factors = sieve(BigInt(curr));
-      return prev.concat([factors]);
-    }, [])
-    .reduceRight(walker("right"), [])
-    .reduce(walker("left"), [])
-    .reduce((factors, curr, index, src) => {
-      if (src.length - 1 === index) {
-        return [...factors, ...curr];
+  return cyphers.reduce((prev, curr, index, src) => {
+    // look behind in prev
+    const [last] = prev.slice(-1);
+    // if there  is nothing to look behind
+    if (!last) {
+      // look ahead until a different number happens
+      const nextDifferentIndex = findNextDifferentIndex(curr, index, src);
+      const nextDifferent = src[nextDifferentIndex];
+      const steps = nextDifferentIndex - index;
+      const common = greatestCommonDivisor(curr, nextDifferent);
+      const factor = curr / common;
+      if (steps % 2 === 0) {
+        return [...prev, common, factor];
       }
-      const [next] = curr;
-      return [...factors, next];
-    }, []);
+      return [...prev, factor, common];
+    }
+    // else if there is something to look behind
+    // then the next number is the result of curr / last
+    // where last would the common factor found at some point
+    const factor = curr / last;
+    return [...prev, curr / last];
+  }, []);
 };
 
 const order = arr =>
@@ -178,10 +137,8 @@ rl.on("line", function(line) {
 }).on("close", function() {
   caseTracker.problems.forEach((line, index) => {
     const [N, L] = caseTracker.headers[index].split(" ").map(e => parseInt(e));
-    const cyphers = line.split(" ").map(e => parseInt(e));
-
+    const cyphers = line.split(" ").map(e => BigInt(e));
     const broken = decodeCypher(N, cyphers);
-
     const lookUpTable = order(broken);
 
     const message = broken

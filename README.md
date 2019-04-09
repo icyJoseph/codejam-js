@@ -6,7 +6,7 @@ This repository features solutions to Google's code jam problems using ES6+.
 
 Solved enough to pass to next round. My two solutions worked flawlessly on the first attempt, and also passed the hidden test cases.
 
-I've also solved problem 3, which now requires a small optimization for the large case, as of now it is taking too long.
+After the qualification, as practice, I solved problem 3, `Cryptopangrams`, inside the `cypher.js` file.
 
 ## Motivation
 
