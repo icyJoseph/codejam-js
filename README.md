@@ -6,7 +6,7 @@ This repository features solutions to Google's code jam problems using ES6+.
 
 Solved enough to pass to next round. My two solutions worked flawlessly on the first attempt, and also passed the hidden test cases.
 
-After the qualification, as practice, I solved problem 3, `Cryptopangrams`, inside the `cypher.js` file.
+After the qualification, as practice, I solved problem 3, `Cryptopangrams`, inside the `cypher.js` file. Problem 4 is also solved in `datbae.js`, very tough problem!
 
 ## Motivation
 
@@ -14,7 +14,7 @@ The Code Jam competition only supports nodejs `4.8.2` which creates a barrier of
 
 ## How does it work?
 
-> CodeJam 2019 has enabled nodejs v 11.13.0!
+> CodeJam 2019 has enabled nodejs v11.13.0!
 
 That means that transpiling is no longer vital, however, we may want special language features and babel can still provide that. For instance, pipe operators.
 
