@@ -7,18 +7,13 @@ const caseTracker = {
   headers: [],
   problems: [],
   results: [],
-  numberOfTests: null,
-  count: null,
+  numberOfLines: null,
+  currentLine: null,
   inc() {
-    this.count = this.count === null ? 1 : this.count + 1;
+    this.currentLine = this.currentLine === null ? 0 : this.currentLine + 1;
   },
-  set(val) {
-    this.numberOfTests = val;
-  },
-  get() {
-    const current = this.count;
-    this.inc();
-    return current;
+  setNumberOfLines(val) {
+    this.numberOfLines = val;
   },
   addProblemHeader(header) {
     this.headers = [...this.headers, header];
@@ -31,34 +26,7 @@ const caseTracker = {
   }
 };
 
-const alphabet = [
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "G",
-  "H",
-  "I",
-  "J",
-  "K",
-  "L",
-  "M",
-  "N",
-  "O",
-  "P",
-  "Q",
-  "R",
-  "S",
-  "T",
-  "U",
-  "V",
-  "W",
-  "X",
-  "Y",
-  "Z"
-];
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 // finds the greatest commont denominator between two numbers
 function greatestCommonDivisor(a, b) {
@@ -103,7 +71,7 @@ const decodeCypher = (N, cyphers) => {
   }, []);
 };
 
-const order = arr =>
+const sort = arr =>
   arr
     .reduce(
       (prev, curr) => (prev.indexOf(curr) === -1 ? prev.concat(curr) : prev),
@@ -121,28 +89,35 @@ const order = arr =>
 
 rl.on("line", function(line) {
   //code goes here
-  const caseNumber = caseTracker.get();
+  // if it is the first line, this will turn currentLine to zero
+  caseTracker.inc();
+  const lineNumber = caseTracker.currentLine;
   // for the first line, which specifies the number of cases
-  if (!caseNumber) {
-    return caseTracker.set(parseInt(line) * 2);
+  if (!lineNumber) {
+    // for this problem the number of expected lines is twice the amount of
+    // tests - after the first line
+    return caseTracker.setNumberOfLines(parseInt(line) * 2);
   }
-  if (caseNumber && caseNumber % 2 !== 0) {
+  // odd lines
+  if (lineNumber && lineNumber % 2 !== 0) {
     caseTracker.addProblemHeader(line);
   }
-  if (caseNumber && caseNumber % 2 === 0) {
+  // even lines
+  if (lineNumber && lineNumber % 2 === 0) {
     caseTracker.addProblem(line);
   }
-  if (caseNumber === caseTracker.numberOfTests) {
+  // if this is the last line
+  if (lineNumber === caseTracker.numberOfLines) {
     return rl.close();
   }
 }).on("close", function() {
   caseTracker.problems.forEach((line, index) => {
     const [N, L] = caseTracker.headers[index].split(" ").map(e => parseInt(e));
     const cyphers = line.split(" ").map(e => BigInt(e));
-    const broken = decodeCypher(N, cyphers);
-    const lookUpTable = order(broken);
+    const factors = decodeCypher(N, cyphers);
+    const lookUpTable = sort(factors);
 
-    const message = broken
+    const message = factors
       .map(e => {
         const tableIndex = lookUpTable.indexOf(e);
         const letter = alphabet[tableIndex];
