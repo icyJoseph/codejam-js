@@ -4,20 +4,15 @@ const rl = readline.createInterface(process.stdin, process.stdout);
 
 // keeps track of the test case being solved
 const caseTracker = {
-  numberOfTests: null,
-  count: null,
   problems: [],
   results: [],
-  inc() {
-    this.count = this.count === null ? 1 : this.count + 1;
+  numberOfLines: null,
+  currentLine: null,
+  nextLine() {
+    this.currentLine = this.currentLine === null ? 0 : this.currentLine + 1;
   },
-  set(val) {
-    this.numberOfTests = val;
-  },
-  get() {
-    const current = this.count;
-    this.inc();
-    return current;
+  setNumberOfLines(val) {
+    this.numberOfLines = val;
   },
   addProblem(problem) {
     this.problems = [...this.problems, problem];
@@ -66,17 +61,19 @@ function sort(arr) {
 }
 
 rl.on("line", function(line) {
-  const lineNumber = caseTracker.get();
+  caseTracker.nextLine();
+  const lineNumber = caseTracker.currentLine;
 
   if (!lineNumber) {
-    caseTracker.set(parseInt(line));
+    // expect twice the amount of lines
+    caseTracker.setNumberOfLines(parseInt(line) * 2);
   }
 
   if (lineNumber && lineNumber % 2 === 0) {
     caseTracker.addProblem(line);
   }
 
-  if (lineNumber / 2 === caseTracker.numberOfTests) {
+  if (lineNumber === caseTracker.numberOfTests) {
     return rl.close();
   }
 }).on("close", function() {

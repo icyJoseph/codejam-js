@@ -6,18 +6,13 @@ const rl = readline.createInterface(process.stdin, process.stdout);
 const caseTracker = {
   problems: [],
   results: [],
-  numberOfTests: null,
-  count: null,
-  inc() {
-    this.count = this.count === null ? 1 : this.count + 1;
+  numberOfLines: null,
+  currentLine: null,
+  nextLine() {
+    this.currentLine = this.currentLine === null ? 0 : this.currentLine + 1;
   },
-  set(val) {
-    this.numberOfTests = val;
-  },
-  get() {
-    const current = this.count;
-    this.inc();
-    return current;
+  setNumerOfLines(val) {
+    this.numberOfLines = val;
   },
   addProblem(problem) {
     this.problems = [...this.problems, problem];
@@ -54,17 +49,19 @@ const mirrorPath = path => {
 
 rl.on("line", function(line) {
   //code goes here
-  const caseNumber = caseTracker.get();
+  caseTracker.nextLine();
+  const lineNumber = caseTracker.currentLine;
   // for the first line, which specifies the number of cases
-  if (!caseNumber) {
-    return caseTracker.set(parseInt(line));
+  if (!lineNumber) {
+    // for this problem we expect twice as many lines
+    return caseTracker.setNumerOfLines(parseInt(line) * 2);
   }
-
-  if (caseNumber && caseNumber % 2 === 0) {
+  // only read the even lines
+  if (lineNumber && lineNumber % 2 === 0) {
     caseTracker.addProblem(line);
   }
 
-  if (caseNumber / 2 === caseTracker.numberOfTests) {
+  if (lineNumber === caseTracker.numberOfLines) {
     return rl.close();
   }
 }).on("close", function() {

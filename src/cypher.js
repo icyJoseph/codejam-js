@@ -9,7 +9,7 @@ const caseTracker = {
   results: [],
   numberOfLines: null,
   currentLine: null,
-  inc() {
+  nextLine() {
     this.currentLine = this.currentLine === null ? 0 : this.currentLine + 1;
   },
   setNumberOfLines(val) {
@@ -90,7 +90,7 @@ const sort = arr =>
 rl.on("line", function(line) {
   //code goes here
   // if it is the first line, this will turn currentLine to zero
-  caseTracker.inc();
+  caseTracker.nextLine();
   const lineNumber = caseTracker.currentLine;
   // for the first line, which specifies the number of cases
   if (!lineNumber) {

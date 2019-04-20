@@ -6,18 +6,13 @@ const rl = readline.createInterface(process.stdin, process.stdout);
 const caseTracker = {
   problems: [],
   results: [],
-  numberOfTests: null,
-  count: null,
-  inc() {
-    this.count = this.count === null ? 1 : this.count + 1;
+  numberOfLines: null,
+  currentLine: null,
+  nextLine() {
+    this.currentLine = this.currentLine === null ? 0 : this.currentLine + 1;
   },
-  set(val) {
-    this.numberOfTests = val;
-  },
-  get() {
-    const current = this.count;
-    this.inc();
-    return current;
+  setNumberOfLines(val) {
+    this.numberOfLines = val;
   },
   addProblem(problem) {
     this.problems = [...this.problems, problem];
@@ -84,15 +79,17 @@ function hackCommands(commands, shield, step = 0) {
 
 rl.on("line", function(line) {
   //code goes here
-  const caseNumber = caseTracker.get();
+  caseTracker.nextLine();
+  const lineNumber = caseTracker.currentLine;
+
   // for the first line, which specifies the number of cases
-  if (!caseNumber) {
-    return caseTracker.set(parseInt(line));
+  if (!lineNumber) {
+    return caseTracker.setNumberOfLines(parseInt(line));
   }
 
   caseTracker.addProblem(line);
 
-  if (caseNumber === caseTracker.numberOfTests) {
+  if (lineNumber === caseTracker.numberOfLines) {
     return rl.close();
   }
 }).on("close", function() {
