@@ -38,49 +38,41 @@ const caseTracker = {
   }
 };
 
-function rules(a, b, strict = false) {
-  if (!strict) {
-    if (a === b) {
-      return true;
-    }
-  }
-  // our robot vs their robot
+function bestBetweenTwo(a, b) {
   const combined = `${a}${b}`;
   switch (combined) {
-    case "PR":
-    case "RS":
+    case "PS":
     case "SP":
-      return true;
+      return "S";
+    case "PR":
+    case "RP":
+      return "P";
+    case "SR":
+    case "RS":
+      return "R";
     default:
       return false;
   }
 }
 
-const transpose = matrix =>
-  matrix.reduceRight(
-    (acc, row) =>
-      row.map((curr, i) => {
-        const prev = acc[i] || [];
-        return prev ? [curr, ...prev] : [curr];
-      }),
-    []
-  );
+function bestResponse(move) {
+  switch (move) {
+    case "S":
+      return "R";
+    case "P":
+      return "S";
+    case "R":
+      return "P";
+    default:
+      return move;
+  }
+}
 
 const unique = arr =>
   arr.reduce(
     (prev, curr) => (prev.includes(curr) ? prev : [...prev, curr]),
     []
   );
-
-const beatsAll = (ourMove, theirMoves = []) => {
-  if (theirMoves.length === 0) {
-    return true;
-  }
-  if (theirMoves.length === 1) {
-    return theirMoves.every(adMove => rules(ourMove, adMove, true));
-  }
-  return theirMoves.every(adMove => rules(ourMove, adMove));
-};
 
 rl.on("line", function(line) {
   //code goes here
@@ -105,41 +97,61 @@ rl.on("line", function(line) {
 }).on("close", function() {
   caseTracker.problems.forEach((programs, index) => {
     const robots = caseTracker.problemHeaders[index];
-    const { result } = Array.from({
-      length: Math.max(...programs.map(p => p.split("").length))
+    const longest = Math.max(...programs.map(p => p.split("").length));
+    // ensure that all programs will last the same
+    const withPadding = programs.map(program =>
+      program.repeat(Math.ceil(longest / program.length)).slice(0, longest)
+    );
+    // walk the length of the longest program
+    const { result = [] } = Array.from({
+      length: longest
     }).reduce(
       (prev, _, index) => {
-        if (prev.programs.length === 0) {
+        if (!prev.result || prev.done) {
           return prev;
         }
-        const current = transpose(prev.programs.map(p => p.split("")))[index];
-        const uniqueMoves = unique(current || []);
-        const choice = ["R", "P", "S"].filter(ourMove =>
-          beatsAll(ourMove, uniqueMoves)
-        );
+        const allMoves = prev.programs
+          .map(p => p.split("")[index])
+          .filter(e => e);
 
-        // keeps those which won't be out of scope
-        const leftPrograms = prev.programs.filter(
-          p => !rules(choice, p.split("")[index], true)
-        );
-
-        return { programs: leftPrograms, result: [...prev.result, choice] };
+        const uniqueMoves = unique(allMoves);
+        const uniqueMovesQty = uniqueMoves.length;
+        switch (uniqueMovesQty) {
+          case 3:
+            // worst case, we cannot ever win
+            return { ...prev, result: undefined };
+          case 2:
+            // we can choose the best move and tie with some robots
+            // while beating others
+            const nextMove = bestBetweenTwo(...uniqueMoves);
+            return {
+              ...prev,
+              programs: prev.programs.filter(program => {
+                const theirMove = program.split("")[index];
+                return theirMove === nextMove;
+              }),
+              result: [...prev.result, nextMove]
+            };
+          case 1:
+            // best case, because we can beat everyone at this point
+            return {
+              ...prev,
+              done: true,
+              result: [...prev.result, bestResponse(...uniqueMoves)]
+            };
+          default:
+            return prev;
+        }
       },
-      { result: [], programs }
+      { result: [], programs: withPadding, done: false }
     );
 
-    const [program = "IMPOSSIBLE"] = transpose(result).map(a => a.join(""));
+    const program = result.join("") || "IMPOSSIBLE";
 
-    const notUnique = programs.includes(program);
-    if (notUnique) {
-      const first = program.slice(0, 1);
-      const [append] = ["R", "P", "S"].filter(ourMove =>
-        beatsAll(ourMove, [first])
-      );
-      const finalProgram = `${program}${append}`;
-      return caseTracker.addResult(`Case #${index + 1}: ${finalProgram}`);
+    if (programs.includes(program)) {
+      const append = bestResponse(...program.split("").slice(0));
+      return caseTracker.addResult(`Case #${index + 1}: ${program}${append}`);
     }
-
     return caseTracker.addResult(`Case #${index + 1}: ${program}`);
   });
 
