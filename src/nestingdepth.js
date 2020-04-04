@@ -26,28 +26,26 @@ const left = "(";
 const right = ")";
 
 const solveFor = (input) => {
-  const { result, nesting } = input.reduce(
-    (prev, curr, index, src) => {
-      if (parseInt(curr) > prev.nesting) {
-        return {
-          result: `${prev.result}${left}${curr}`,
-          nesting: prev.nesting + 1,
-        };
-      } else if (parseInt(curr) < prev.nesting) {
-        return {
-          result: `${prev.result}${right}${curr}`,
-          nesting: prev.nesting - 1,
-        };
-      } else {
-        return {
-          ...prev,
-          result: `${prev.result}${curr}`,
-        };
-      }
-    },
-    { result: "", nesting: 0 }
-  );
-  return `${result}${right.repeat(nesting)}`;
+  const padStart = "0";
+  const padEnd = "0";
+  const padded = [padStart, ...input, padEnd];
+
+  const paddedResult = padded.reduce((acc, curr, index, src) => {
+    const next = src[index + 1] || padEnd;
+
+    const nextDelta = parseInt(curr) - parseInt(next);
+
+    const repeats = Math.abs(nextDelta);
+    if (nextDelta < 0) {
+      return `${acc}${curr}${left.repeat(repeats)}`;
+    } else if (nextDelta > 0) {
+      return `${acc}${curr}${right.repeat(repeats)}`;
+    } else {
+      return `${acc}${curr}`;
+    }
+  }, "");
+  const result = paddedResult.slice(1, paddedResult.length - 1);
+  return result;
 };
 
 rl.on("line", function (line) {
@@ -66,17 +64,13 @@ rl.on("line", function (line) {
     return rl.close();
   }
 }).on("close", function () {
-  try {
-    caseTracker.problems.forEach((line, index) => {
-      const input = line.split("");
+  caseTracker.problems.forEach((line, index) => {
+    const input = line.split("");
 
-      const output = solveFor(input);
+    const output = solveFor(input);
 
-      caseTracker.addResult(`Case #${index + 1}: ${output}`);
-    });
-  } catch (e) {
-    console.log(e);
-  }
+    caseTracker.addResult(`Case #${index + 1}: ${output}`);
+  });
 
   caseTracker.results.forEach((result) => console.log(result));
 
