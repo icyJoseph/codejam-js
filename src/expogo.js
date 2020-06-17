@@ -34,55 +34,47 @@ const isCoordinateOdd = ({ x, y }) => {
   return [x, y].reduce((acc, curr) => Math.abs(curr) + acc, 0) % 2 !== 0;
 };
 
-const canBeFinishedInOppositeDirection = ({ x, y, direction }) => {
-  if (direction === NORTH) {
-    return x === 0 && y + 1 === 0;
-  } else if (direction === EAST) {
-    return y === 0 && x + 1 === 0;
-  }
-};
-
-const hasFinished = ({ x, y }) => x === 0 && y === 0;
-
 const scale = (num) => num / 2;
 
 function moveTowardsOdd({ x, y }) {
-  if (Math.abs(x) % 2 !== 0) {
-    // try to move EAST
-    let pivotX = x - 1;
-    if (
-      (isCoordinateOdd({ x: scale(pivotX), y: scale(y) }) &&
-        !canBeFinishedInOppositeDirection({
-          direction: EAST,
-          x: scale(pivotX),
-          y: scale(y)
-        })) ||
-      hasFinished({ x: scale(pivotX), y: scale(y) })
-    ) {
-      return { step: EAST, nextX: scale(pivotX), nextY: scale(y) };
-    } else {
-      // failed to move EAST, move WEST
-      pivotX = x + 1;
-      return { step: WEST, nextX: scale(pivotX), nextY: scale(y) };
+  if (x === 1 && y === 0) {
+    // can be finished in one move by moving EAST
+    return { step: EAST, nextX: scale(x - 1), nextY: y };
+  }
+
+  if (x === -1 && y === 0) {
+    // can be finished in one move by moving WEST
+    return { step: WEST, nextX: scale(x + 1), nextY: y };
+  }
+
+  if (x === 0 && y === 1) {
+    // can be finished in one move by moving NORTH
+    return { step: NORTH, nextX: x, nextY: scale(y - 1) };
+  }
+
+  if (x === 0 && y === -1) {
+    // can be finished in one move by moving SOUTH
+    return { step: SOUTH, nextX: x, nextY: scale(y + 1) };
+  }
+
+  if (x % 2 !== 0) {
+    // move EAST
+    const wouldBeOdd = isCoordinateOdd({ x: scale(x - 1), y: scale(y) });
+    if (wouldBeOdd) {
+      return { step: EAST, nextX: scale(x - 1), nextY: scale(y) };
     }
-  } else if (Math.abs(y) % 2 !== 0) {
-    // try to move NORTH
-    let pivotY = y - 1;
-    if (
-      (isCoordinateOdd({ x: scale(x), y: scale(pivotY) }) &&
-        !canBeFinishedInOppositeDirection({
-          direction: NORTH,
-          x: scale(x),
-          y: scale(pivotY)
-        })) ||
-      hasFinished({ x: scale(x), y: scale(pivotY) })
-    ) {
-      return { step: NORTH, nextX: scale(x), nextY: scale(pivotY) };
-    } else {
-      // failed to move NORTH, move SOUTH
-      pivotY = y + 1;
-      return { step: SOUTH, nextX: scale(x), nextY: scale(pivotY) };
+    // better to move WEST
+    return { step: WEST, nextX: scale(x + 1), nextY: scale(y) };
+  }
+
+  if (y % 2 !== 0) {
+    // move NORTH
+    const wouldBeOdd = isCoordinateOdd({ x: scale(x), y: scale(y - 1) });
+    if (wouldBeOdd) {
+      return { step: NORTH, nextX: scale(x), nextY: scale(y - 1) };
     }
+    // better to move SOUTH
+    return { step: SOUTH, nextX: scale(x), nextY: scale(y + 1) };
   }
 }
 
@@ -107,8 +99,7 @@ const moveExpogo = ({ x, y, steps = "" }) => {
   // now make the distance to the odd coordinate
   // even, by taking a one unit step
   const { step, nextX, nextY } = moveTowardsOdd({ x, y });
-  steps = `${steps}${step}`;
-  return moveExpogo({ x: nextX, y: nextY, steps });
+  return moveExpogo({ x: nextX, y: nextY, steps: `${steps}${step}` });
 };
 
 rl.on("line", function (line) {
