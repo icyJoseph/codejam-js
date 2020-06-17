@@ -30,9 +30,7 @@ const [NORTH, SOUTH, WEST, EAST, IMPOSSIBLE] = [
   "IMPOSSIBLE"
 ];
 
-const isCoordinateOdd = ({ x, y }) => {
-  return [x, y].reduce((acc, curr) => Math.abs(curr) + acc, 0) % 2 !== 0;
-};
+const isCoordinateOdd = ({ x, y }) => (x + y) % 2 !== 0;
 
 const scale = (num) => num / 2;
 
