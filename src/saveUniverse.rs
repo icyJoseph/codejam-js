@@ -1,3 +1,4 @@
+// https://codingcompetitions.withgoogle.com/codejam/round/00000000000000cb/0000000000007966
 use std::io;
 
 type Res<T> = Result<T, Box<dyn std::error::Error>>;
