@@ -8,3 +8,4 @@ Cargo.toml
 target
 rust_builds
 tests/overrandomized.in
+rls
