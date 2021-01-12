@@ -17,7 +17,6 @@ fn ptc<T: std::str::FromStr>() -> T {
     }
 }
 
-
 fn main() -> Res<()> {
     let n = ptc::<i32>();
     for case in 1..=n {
