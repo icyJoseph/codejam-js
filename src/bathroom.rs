@@ -1,5 +1,7 @@
 use std::io;
 
+use std::collections::{HashSet, HashMap};
+    
 type Res<T> = Result<T, Box<dyn std::error::Error>>;
 
 fn nxt() -> String {
@@ -24,6 +26,13 @@ fn split(n: u64) -> (u64, u64) {
     return (n / 2, n / 2);
 }
 
+fn max(s:&HashSet<u64>)-> u64{
+    match s.iter().max() {
+        Some(&n)=> n,
+        _=>panic!("Empty")
+    }
+}
+
 fn main() -> Res<()> {
     let n = ptc::<i32>();
 
@@ -35,26 +44,46 @@ fn main() -> Res<()> {
 
         let s = entry[0];
         let k = entry[1];
+    
+        let mut set: HashSet<u64> = HashSet::new();
+        let mut pres:HashMap<u64, u64> = HashMap::new();
 
-        use std::collections::BinaryHeap;
+        let mut count = 0;
 
-        let mut set: BinaryHeap<u64> = BinaryHeap::new();
-
-        set.push(s);
+        set.insert(s);
+        pres.insert(s,1);
 
         let mut l = 0;
         let mut r = 0;
 
-        for _ in 0..k {
-            let next = set.pop().unwrap();
+        loop {
+            if count >= k {
+                break;
+            }
+
+            let next = max(&set);
+
+            let qty = *pres.get(&next).unwrap();
+
+            count = count + qty;
+
             let sp = split(next);
 
             l = sp.0;
             r = sp.1;
+            
+            set.remove(&next);
+            set.insert(sp.0);
+            set.insert(sp.1);
+            
+            pres.remove(&next);
+            let a = pres.entry(sp.0).or_insert(0);
+            *a += qty;
+            let b = pres.entry(sp.1).or_insert(0);
+            *b += qty;
 
-            set.push(sp.0);
-            set.push(sp.1);
         }
+
 
         println!(
             "Case #{}: {} {}",
