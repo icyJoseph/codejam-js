@@ -144,6 +144,15 @@ fn get_dg(entry: (usize, usize), grid: &Vec<Vec<char>>) -> Vec<char> {
     dg
 }
 
+fn fmod(entry: (usize, usize), size: usize) -> usize {
+    let (row, col) = entry;
+    row * size + col
+}
+
+fn rmod(m: usize, size: usize) -> (usize, usize) {
+    (m / size, m % size)
+}
+
 fn main() -> Res<()> {
     let n = ptc::<i32>();
 
@@ -156,6 +165,7 @@ fn main() -> Res<()> {
         let size = spec[0];
         let models = spec[1];
 
+        let mut points = 0;
         let mut p_grid: Vec<Vec<char>> = vec![vec!['.'; size]; size];
         let mut x_grid: Vec<Vec<char>> = vec![vec!['.'; size]; size];
 
@@ -168,86 +178,81 @@ fn main() -> Res<()> {
             let c = model_spec.next().unwrap().parse::<usize>().unwrap() - 1;
 
             match value {
-                '+' => p_grid[r][c] = value,
-                'x' => x_grid[r][c] = value,
+                '+' => {
+                    p_grid[r][c] = value;
+                    points += 1;
+                }
+                'x' => {
+                    x_grid[r][c] = value;
+                    points += 1;
+                }
                 'o' => {
                     p_grid[r][c] = '+';
                     x_grid[r][c] = 'x';
+                    points += 2;
                 }
                 _ => panic!("Unknown model"),
             }
         }
 
-        let mut changes: Vec<(char, usize, usize)> = vec![];
+        use std::collections::HashMap;
 
-        // row and col only one 'x'
-        // diagonals only one '+'
+        let mut changes: HashMap<usize, char> = HashMap::new();
 
         for row in 0..size {
             for col in 0..size {
                 let entry = (row, col);
-                let mut into_p = false;
-                let mut into_x = false;
 
-                // solve for x_grid
                 match x_grid[row][col] {
-                    'x' => {
-                        
-                    }
+                    'x' => {}
                     '.' => {
                         let rc = get_rc(entry, &x_grid);
                         if !rc.contains(&'x') {
                             x_grid[row][col] = 'x';
-                            into_x = true;
+                            points += 1;
+
+                            changes.insert(fmod(entry, size), 'x');
                         }
                     }
                     _ => panic!("Unknown model"),
                 }
+            }
+        }
+
+        for row in 0..size {
+            for col in 0..size {
+                let entry = (row, col);
 
                 if row == 0 || row == size - 1 {
                     // solve for p_grid
                     match p_grid[row][col] {
-                        '+' => {
-                            // into_p = true;
-                        }
+                        '+' => {}
                         '.' => {
                             let dg = get_dg(entry, &p_grid);
 
                             if !dg.contains(&'+') {
                                 p_grid[row][col] = '+';
-                                into_p = true;
+                                points += 1;
+
+                                let key = fmod(entry, size);
+
+                                match changes.get(&key) {
+                                    Some(_) => changes.insert(key, 'o'),
+                                    None => changes.insert(key, '+'),
+                                };
                             }
                         }
                         _ => panic!("Unknown model"),
                     }
                 }
-
-                if into_x && p_grid[row][col] == '+' {
-                    changes.push(('o', row, col));
-                } else if into_p && x_grid[row][col] == 'x' {
-                    changes.push(('o', row, col));
-                } else if into_x {
-                    changes.push(('x', row, col));
-                } else if into_p {
-                    changes.push(('+', row, col));
-                }
             }
         }
 
-        let points = [&p_grid[..], &x_grid[..]]
-            .concat()
-            .into_iter()
-            .fold(0, |prev, row| {
-                prev + row.into_iter().fold(0, |acc, c| match c {
-                    '+' | 'x' => acc + 1,
-                    _ => acc,
-                })
-            });
-
         println!("Case #{}: {} {}", case, points, changes.len());
 
-        for change in changes {
-            println!("{} {} {}", change.0, change.1 + 1, change.2 + 1);
+        for (key, val) in changes {
+            let (r, c) = rmod(key, size);
+            println!("{} {} {}", val, r + 1, c + 1);
         }
     }
     Ok(())
