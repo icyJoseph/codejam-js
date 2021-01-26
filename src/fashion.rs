@@ -78,70 +78,26 @@ fn get_rc(entry: (usize, usize), grid: &Vec<Vec<char>>) -> Vec<char> {
     rc
 }
 
-fn get_dg(entry: (usize, usize), grid: &Vec<Vec<char>>) -> Vec<char> {
-    let mut dg: Vec<char> = vec![];
-
-    let mut i = 1;
+fn simple_dg(entry: (usize, usize), grid: &Vec<Vec<char>>, size: usize) -> Vec<(char, usize)> {
+    let mut s_dg = vec![];
+    let mut i = 0;
 
     loop {
-        let mut none = 0;
-
-        // down right
-        match grid.get(entry.0 + i) {
-            Some(row) => match row.get(entry.1 + i) {
-                Some(&c) => dg.push(c),
-                None => none += 1,
-            },
-            None => none += 1,
-        }
-
-        //  up right
         match entry.0.checked_sub(i) {
             Some(y) => match grid.get(y) {
                 Some(row) => match row.get(entry.1 + i) {
-                    Some(&c) => dg.push(c),
-                    None => none += 1,
+                    Some(&c) => s_dg.push((c, fmod((y, entry.1 + i), size))),
+                    None => break,
                 },
-                None => none += 1,
+                None => break,
             },
-            None => none += 1,
-        }
-
-        // down left
-        match grid.get(entry.0 + i) {
-            Some(row) => match entry.1.checked_sub(i) {
-                Some(x) => match row.get(x) {
-                    Some(&c) => dg.push(c),
-                    None => none += 1,
-                },
-                None => none += 1,
-            },
-            None => none += 1,
-        }
-
-        // up left
-        match entry.0.checked_sub(i) {
-            Some(y) => match grid.get(y) {
-                Some(row) => match entry.1.checked_sub(i) {
-                    Some(x) => match row.get(x) {
-                        Some(&c) => dg.push(c),
-                        None => none += 1,
-                    },
-                    None => none += 1,
-                },
-                None => none += 1,
-            },
-            None => none += 1,
-        }
-
-        if none == 4 {
-            break;
+            None => break,
         }
 
         i += 1;
     }
 
-    dg
+    s_dg
 }
 
 fn fmod(entry: (usize, usize), size: usize) -> usize {
@@ -151,6 +107,58 @@ fn fmod(entry: (usize, usize), size: usize) -> usize {
 
 fn rmod(m: usize, size: usize) -> (usize, usize) {
     (m / size, m % size)
+}
+
+fn remove_none_rows(grid: Vec<Vec<Option<(char, usize)>>>) -> Vec<Vec<Option<(char, usize)>>> {
+    let mut result = vec![];
+    for row in grid {
+        if row.iter().all(|x| x.is_none()) {
+            continue;
+        }
+        result.push(row);
+    }
+
+    result
+}
+
+fn shrink(grid: Vec<Vec<Option<(char, usize)>>>) -> Vec<Vec<Option<(char, usize)>>> {
+    let mut shrunk: Vec<Vec<Option<(char, usize)>>> = vec![];
+
+    let mut skip_r = vec![];
+    let mut skip_c = vec![];
+
+    for r in 0..grid.len() {
+        match grid[r].iter().position(|x| match x {
+            Some(('+', _)) => true,
+            _ => false,
+        }) {
+            Some(c) => {
+                skip_r.push(r);
+                skip_c.push(c);
+            }
+            None => {}
+        }
+    }
+
+    for r in 0..grid.len() {
+        if skip_r.contains(&r) {
+            continue;
+        }
+
+        let mut row = vec![];
+
+        for c in 0..grid[r].len() {
+            if skip_c.contains(&c) {
+                continue;
+            }
+            let entry = grid[r][c];
+            row.push(entry);
+        }
+
+        shrunk.push(row);
+    }
+
+    remove_none_rows(shrunk)
 }
 
 fn main() -> Res<()> {
@@ -211,7 +219,11 @@ fn main() -> Res<()> {
                             x_grid[row][col] = 'x';
                             points += 1;
 
-                            changes.insert(fmod(entry, size), 'x');
+                            if p_grid[row][col] == '+' {
+                                changes.insert(fmod(entry, size), 'o');
+                            } else {
+                                changes.insert(fmod(entry, size), 'x');
+                            }
                         }
                     }
                     _ => panic!("Unknown model"),
@@ -219,33 +231,193 @@ fn main() -> Res<()> {
             }
         }
 
+        let mut odd_grid: Vec<Vec<Option<(char, usize)>>> = vec![vec![None; size]; size];
+        let mut even_grid: Vec<Vec<Option<(char, usize)>>> = vec![vec![None; size]; size];
+
         for row in 0..size {
-            for col in 0..size {
-                let entry = (row, col);
+            let s_dg = simple_dg((row, 0), &p_grid, size);
 
-                if row == 0 || row == size - 1 {
-                    // solve for p_grid
-                    match p_grid[row][col] {
-                        '+' => {}
-                        '.' => {
-                            let dg = get_dg(entry, &p_grid);
+            if row % 2 == 0 {
+                let padding = (size - s_dg.len()) / 2;
+                for index in padding..s_dg.len() + padding {
+                    even_grid[row / 2][index] = Some(s_dg[index - padding]);
+                }
+            } else {
+                let padding = (size - s_dg.len()) / 2;
+                for index in padding..s_dg.len() + padding {
+                    odd_grid[row / 2][index] = Some(s_dg[index - padding]);
+                }
+            }
 
-                            if !dg.contains(&'+') {
-                                p_grid[row][col] = '+';
-                                points += 1;
+            if row == size - 1 {
+                for col in 1..size {
+                    let s_dg = simple_dg((row, col), &p_grid, size);
 
-                                let key = fmod(entry, size);
-
-                                match changes.get(&key) {
-                                    Some(_) => changes.insert(key, 'o'),
-                                    None => changes.insert(key, '+'),
-                                };
-                            }
+                    if (row + col) % 2 == 0 {
+                        let padding = (size - s_dg.len()) / 2;
+                        for index in padding..s_dg.len() + padding {
+                            even_grid[(row + col) / 2][index] = Some(s_dg[index - padding]);
                         }
-                        _ => panic!("Unknown model"),
+                    } else {
+                        let padding = (size - s_dg.len()) / 2;
+                        for index in padding..s_dg.len() + padding {
+                            odd_grid[(row + col) / 2][index] = Some(s_dg[index - padding]);
+                        }
                     }
                 }
             }
+        }
+
+        while even_grid.iter().any(|row| {
+            row.iter().any(|x| match x {
+                Some(('+', _)) => true,
+                _ => false,
+            })
+        }) {
+            even_grid = shrink(even_grid);
+        }
+
+        even_grid = remove_none_rows(even_grid);
+
+        loop {
+            if even_grid.len() == 0 {
+                break;
+            }
+
+            let next = {
+                let mut ret = 0;
+
+                let mut min = even_grid[0]
+                    .iter()
+                    .filter(|x| match x {
+                        Some(_) => true,
+                        _ => false,
+                    })
+                    .collect::<Vec<&Option<(char, usize)>>>()
+                    .len();
+
+                for r in 1..even_grid.len() {
+                    let sat = even_grid[r]
+                        .iter()
+                        .filter(|x| match x {
+                            Some(_) => true,
+                            _ => false,
+                        })
+                        .collect::<Vec<&Option<(char, usize)>>>()
+                        .len();
+
+                    if sat < min {
+                        min = sat;
+                        ret = r;
+                    }
+                }
+                ret
+            };
+
+            for col in 0..even_grid[next].len() {
+                match even_grid[next][col] {
+                    Some(('.', p)) => {
+                        even_grid[next][col] = Some(('+', p));
+                        points += 1;
+                        let (r, c) = rmod(p, size);
+                        match changes.get(&p) {
+                            Some(&'x') => changes.insert(p, 'o'),
+                            None if x_grid[r][c] == 'x' => changes.insert(p, 'o'),
+                            None => changes.insert(p, '+'),
+                            _ => panic!("Unknown symbol"),
+                        };
+                        break;
+                    }
+                    _ => continue,
+                }
+            }
+
+            if !even_grid.iter().any(|row| {
+                row.iter().any(|x| match x {
+                    Some(('+', _)) => true,
+                    _ => false,
+                })
+            }) {
+                break;
+            }
+
+            even_grid = shrink(even_grid);
+        }
+
+        while odd_grid.iter().any(|row| {
+            row.iter().any(|x| match x {
+                Some(('+', _)) => true,
+                _ => false,
+            })
+        }) {
+            odd_grid = shrink(odd_grid);
+        }
+
+        odd_grid = remove_none_rows(odd_grid);
+
+        loop {
+            if odd_grid.len() == 0 {
+                break;
+            }
+
+            let next = {
+                let mut ret = 0;
+
+                let mut min = odd_grid[0]
+                    .iter()
+                    .filter(|x| match x {
+                        Some(_) => true,
+                        _ => false,
+                    })
+                    .collect::<Vec<&Option<(char, usize)>>>()
+                    .len();
+
+                for r in 1..odd_grid.len() {
+                    let sat = odd_grid[r]
+                        .iter()
+                        .filter(|x| match x {
+                            Some(_) => true,
+                            _ => false,
+                        })
+                        .collect::<Vec<&Option<(char, usize)>>>()
+                        .len();
+
+                    if sat < min {
+                        min = sat;
+                        ret = r;
+                    }
+                }
+                ret
+            };
+
+            for col in 0..odd_grid[next].len() {
+                match odd_grid[next][col] {
+                    Some(('.', p)) => {
+                        odd_grid[next][col] = Some(('+', p));
+                        points += 1;
+                        let (r, c) = rmod(p, size);
+                        match changes.get(&p) {
+                            Some(&'x') => changes.insert(p, 'o'),
+                            None if x_grid[r][c] == 'x' => changes.insert(p, 'o'),
+                            None => changes.insert(p, '+'),
+                            _ => panic!("Unknown symbol"),
+                        };
+                        break;
+                    }
+                    _ => continue,
+                }
+            }
+
+            if !odd_grid.iter().any(|row| {
+                row.iter().any(|x| match x {
+                    Some(('+', _)) => true,
+                    _ => false,
+                })
+            }) {
+                break;
+            }
+
+            odd_grid = shrink(odd_grid);
         }
 
         println!("Case #{}: {} {}", case, points, changes.len());
