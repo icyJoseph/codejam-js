@@ -21,64 +21,22 @@ fn ptc<T: std::str::FromStr>() -> T {
 fn get_rc(entry: (usize, usize), grid: &Vec<Vec<char>>) -> Vec<char> {
     let mut rc: Vec<char> = vec![];
 
-    let mut i = 1;
-
-    loop {
-        let mut none = 0;
-
-        // up
-        match entry.0.checked_sub(i) {
-            Some(y) => match grid.get(y) {
-                Some(row) => match row.get(entry.1) {
-                    Some(&c) => rc.push(c),
-                    None => none += 1,
-                },
-                None => none += 1,
-            },
-            None => none += 1,
+    for r in 0..grid.len() {
+        if r == entry.0 {
+            for c in 0..grid[r].len() {
+                if c != entry.1 { 
+                    rc.push(grid[r][c]);
+                 }
+            }
         }
 
-        // down
-        match grid.get(entry.0 + i) {
-            Some(row) => match row.get(entry.1) {
-                Some(&c) => rc.push(c),
-                None => none += 1,
-            },
-            None => none += 1,
-        }
-
-        // left
-        match grid.get(entry.0) {
-            Some(row) => match row.get(entry.1 + i) {
-                Some(&c) => rc.push(c),
-                None => none += 1,
-            },
-            None => none += 1,
-        }
-
-        // right
-        match grid.get(entry.0) {
-            Some(row) => match entry.1.checked_sub(i) {
-                Some(x) => match row.get(x) {
-                    Some(&c) => rc.push(c),
-                    None => none += 1,
-                },
-                None => none += 1,
-            },
-            None => none += 1,
-        }
-
-        if none == 4 {
-            break;
-        }
-
-        i += 1;
+        rc.push(grid[r][entry.1]);
     }
 
     rc
 }
 
-fn simple_dg(entry: (usize, usize), grid: &Vec<Vec<char>>, size: usize) -> Vec<(char, usize)> {
+fn dg(entry: (usize, usize), grid: &Vec<Vec<char>>, size: usize) -> Vec<(char, usize)> {
     let mut s_dg = vec![];
     let mut i = 0;
 
@@ -235,7 +193,7 @@ fn main() -> Res<()> {
         let mut even_grid: Vec<Vec<Option<(char, usize)>>> = vec![vec![None; size]; size];
 
         for row in 0..size {
-            let s_dg = simple_dg((row, 0), &p_grid, size);
+            let s_dg = dg((row, 0), &p_grid, size);
 
             if row % 2 == 0 {
                 let padding = (size - s_dg.len()) / 2;
@@ -251,7 +209,7 @@ fn main() -> Res<()> {
 
             if row == size - 1 {
                 for col in 1..size {
-                    let s_dg = simple_dg((row, col), &p_grid, size);
+                    let s_dg = dg((row, col), &p_grid, size);
 
                     if (row + col) % 2 == 0 {
                         let padding = (size - s_dg.len()) / 2;
