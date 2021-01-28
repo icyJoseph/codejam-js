@@ -17,73 +17,95 @@ fn ptc<T: std::str::FromStr>() -> T {
     }
 }
 
-// a more solid way to conclude if it would round up
-fn calc_dec(a: usize, b: usize) -> i32 {
-    let floor = 100 * a / b;
-    let val: f64 = (100.0 * a as f64) / (b as f64);
-    ((val - floor as f64) * 100.0) as i32
+fn does_round_up(a: usize, b: usize) -> bool {
+    2 * (100 * a % b) >= b
+}
+
+fn distance(a: usize, b: usize) -> usize {
+    let mut delta = 0;
+
+    if 100 * a % b == 0 {
+        return delta;
+    }
+
+    while !does_round_up(a + delta, b) {
+        delta += 1;
+    }
+
+    delta
+}
+
+fn find_minr(n: usize) -> usize {
+    let mut min = 1;
+
+    if 100 * min % n == 0 {
+        return min;
+    }
+
+    while !does_round_up(min, n) {
+        min += 1;
+    }
+
+    min
+}
+
+fn round_up(a: usize, b: usize) -> usize {
+    if does_round_up(a, b) {
+        return 100 * a / b + 1;
+    }
+    return 100 * a / b;
 }
 
 fn main() -> Res<()> {
     let n = ptc::<i32>();
+
     for case in 1..=n {
         let spec: Vec<usize> = nxt()
             .trim()
             .split_whitespace()
             .map(|x| x.parse::<usize>().unwrap())
             .collect();
-            
+
         let people = spec[0];
 
-        let mut resp: Vec<usize> = nxt()
+        let mut resp: Vec<(usize, usize)> = nxt()
             .trim()
             .split_whitespace()
             .map(|x| x.parse::<usize>().unwrap())
+            .map(|x| (x, distance(x, people)))
             .collect();
 
-        let mut diff = people - resp.iter().fold(0, |p, c| p + c);
+        let mut diff = people - resp.iter().fold(0, |p, c| p + c.0);
 
-        resp.sort_by(|a, b| calc_dec(*b, people).cmp(&calc_dec(*a, people)));
+        resp.sort_by(|a, b| a.1.cmp(&b.1));
 
-        loop {
-            for lang in 0..resp.len() {
-                let mut dec = calc_dec(resp[lang], people);
-                if dec == 0 || dec >= 50 {
-                    continue;
-                } else {
-                    loop {
-                        if diff == 0 {
-                            break;
-                        }
+        let mut total = 0;
 
-                        resp[lang] = resp[lang] + 1;
-                        diff -= 1;
-                        dec = calc_dec(resp[lang], people);
-                        if dec >= 50 {
-                            break;
-                        }
-                    }
-                }
-            }
+        for (qty, dist) in resp {
+            if diff >= dist {
+                let delta = round_up(qty + dist, people);
 
-            if diff > 0 {
-                resp.push(1);
-                diff -= 1;
+                total += delta;
+                diff -= dist;
             } else {
-                break;
+                let delta = round_up(qty, people);
+
+                total += delta;
             }
         }
 
-        let result = resp.iter().fold(0, |prev, &curr| {
-            let dec = calc_dec(curr, people);
-            if dec >= 50 {
-                return prev + (100 * curr / people) + 1;
-            } else {
-                return prev + (100 * curr / people);
-            }
-        });
+        let minr = find_minr(people);
 
-        println!("Case #{}: {}", case, result);
+        let pad = diff / minr;
+        let leftover = diff % minr;
+
+        let delta = round_up(minr, people);
+        let leftover_delta = round_up(leftover, people);
+
+        total += pad * delta;
+        total += leftover_delta;
+
+        println!("Case #{}: {}", case, total);
     }
     Ok(())
 }
