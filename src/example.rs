@@ -17,10 +17,20 @@ fn ptc<T: std::str::FromStr>() -> T {
     }
 }
 
+fn vtc<T: std::str::FromStr>() -> Vec<T> {
+    nxt()
+        .split_whitespace()
+        .map(|x| match x.parse::<T>() {
+            Ok(n) => n,
+            _ => panic!("Could not parse vector"),
+        })
+        .collect()
+}
+
 fn main() -> Res<()> {
-    let n = ptc::<i32>();
+    let n = ptc::<u32>();
     for case in 1..=n {
-     println!("Case #{}: {}", case, 0);
+        println!("Case #{}: {}", case, 0);
     }
     Ok(())
 }
