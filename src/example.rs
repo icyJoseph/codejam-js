@@ -10,14 +10,14 @@ fn nxt() -> String {
     }
 }
 
-fn ptc<T: std::str::FromStr>() -> T {
+fn parse_num<T: std::str::FromStr>() -> T {
     match nxt().trim().parse::<T>() {
         Ok(n) => n,
         _ => panic!("Error parsing"),
     }
 }
 
-fn vtc<T: std::str::FromStr>() -> Vec<T> {
+fn parse_vec<T: std::str::FromStr>() -> Vec<T> {
     nxt()
         .split_whitespace()
         .map(|x| match x.parse::<T>() {
@@ -28,7 +28,7 @@ fn vtc<T: std::str::FromStr>() -> Vec<T> {
 }
 
 fn main() -> Res<()> {
-    let n = ptc::<u32>();
+    let n = parse_num::<u32>();
     for case in 1..=n {
         println!("Case #{}: {}", case, 0);
     }
