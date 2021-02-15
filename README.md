@@ -1,18 +1,36 @@
-# CodeJam Solutions using ES6+
+# Competitive Programming
 
-This repository features solutions to Google's code jam problems using ES6+.
+This repository features solutions to Google's competitions and Codeforces using Rust.
 
-## CodeJam 2019
+## Content
+
+Solutions to Kick Start Problems, Codeforces and CodeJam are all mixed up in the `src/` folder.
+
+## Quick start
+
+In this competitions speed is everything, that's why there's a file, `src/example.src`, which can be used to start solving a problem.
+
+It contains number parsing, and vector parsing for `i32`, `usize`, `u32`, etc. All generics that implement `FromStr`.
+
+It is also possible to simply read the next line, as a `String`, using `nxt`.
+
+## TODO
+
+Move over script to feed `tests` to a Node script or Rust solution, into to a Rust executable.
+
+## Legacy
+
+### CodeJam 2019
 
 Solved enough to pass to next round. My two solutions worked flawlessly on the first attempt, and also passed the hidden test cases.
 
 After the qualification, as practice, I solved problem 3, `Cryptopangrams`, inside the `cypher.js` file. Problem 4 is also solved in `datbae.js`, very tough problem!
 
-## Motivation
+### Motivation
 
 The Code Jam competition only supports nodejs `4.8.2` which creates a barrier of entry for someone who's writing modern javascript on a daily basis. We are just very much used to the syntax sugar and new functionality available to us.
 
-## How does it work?
+### How does it work?
 
 > CodeJam 2019 has enabled nodejs v11.13.0!
 
@@ -64,7 +82,7 @@ Just in case you want to use some new features to help you build test cases, you
 
 We now have a project that supports babel 7+ and all of the JavaScript candy that comes with it. Furthermore, our project will rewrite our code to make sure that node `4.8.2` can run it!
 
-## Approach
+### Approach
 
 First solve the problem!
 
@@ -88,6 +106,6 @@ node runner <problemName/>
 
 And we can see if our solution is working as expected.
 
-## Submission
+### Submission
 
 To submit your solution, just go to Code Jam's website, navigate to the problem and select `Load File`. Then submit `build/<problemName>`, or just copy paste its contents into the Code Jam text editor.
