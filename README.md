@@ -14,11 +14,28 @@ It contains number parsing, and vector parsing for `i32`, `usize`, `u32`, etc. A
 
 It is also possible to simply read the next line, as a `String`, using `nxt`.
 
-## TODO
+## `spr`
 
-Move over script to feed `tests` to a Node script or Rust solution, into to a Rust executable.
+`spr` is a Rust CLI to simplify and speed up problem solving.
 
-## Legacy
+It has two modes, `create` and `run`. The default mode is to `run`.
+
+To create a new problem:
+
+```
+cargo run <problem-name> -m create
+```
+
+This copies the contents of `src/example.rs` to `src/<problem-name>.rs` and also creates a test file `tests/<problem-name>.in`.
+
+To run a problem:
+
+```
+cargo run <problem-name>
+```
+
+This runs `rustc src/<problem-name>.rs --out-dir rls` and then pipes `tests/<problem-name>.in` to `./rls/<problem-name>`. Assuming things go well. If an error should ocurr at any stage, the error message floats up to the stdout.
+
 
 ### CodeJam 2019
 
