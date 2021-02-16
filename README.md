@@ -36,6 +36,7 @@ cargo run <problem-name>
 
 This runs `rustc src/<problem-name>.rs --out-dir rls` and then pipes `tests/<problem-name>.in` to `./rls/<problem-name>`. Assuming things go well. If an error should ocurr at any stage, the error message floats up to the stdout.
 
+## Legacy
 
 ### CodeJam 2019
 
