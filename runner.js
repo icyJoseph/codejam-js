@@ -3,7 +3,7 @@ const { performance } = require("perf_hooks");
 const { exec, spawn } = require("child_process");
 
 // TODO: Perhaps we could trigger a transpile process from here
-const [name, src = "src"] = process.argv.slice(2);
+const [name, src = "js"] = process.argv.slice(2);
 const testPath = `tests/${name}.in`;
 const target = `${src}/${name}`;
 const expectedScriptName = `${name}.js`;
