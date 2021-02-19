@@ -35,29 +35,30 @@ fn main() -> Res<()> {
         let total = spec[0] as usize;
         let max = spec[1];
 
-        let mut amounts = parse_vec::<u32>();
-        let mut people = (0..total).collect::<Vec<usize>>();
-        let mut exit = vec![];
+        let amounts = parse_vec::<u32>();
 
-        loop {
-            if people.len() == 0 {
-                break;
-            }
-            let next = people.remove(0);
-            let next_amount = amounts[next];
+        let mut exit: Vec<(usize, u32)> = (0..total)
+            .collect::<Vec<usize>>()
+            .iter()
+            .map(|&x| {
+                let qty = amounts[x];
 
-            if next_amount > max {
-                people.push(next);
-                amounts[next] = next_amount - max;
-            } else {
-                exit.push(next);
-            }
-        }
+                let times = if qty % max == 0 {
+                    qty / max
+                } else {
+                    qty / max + 1
+                };
+
+                (x, times)
+            })
+            .collect::<Vec<(usize, u32)>>();
+
+        exit.sort_by(|a, b| a.1.cmp(&b.1));
 
         let answer = format!(
             "{}",
             exit.iter()
-                .map(|x| (x + 1).to_string())
+                .map(|x| (x.0 + 1).to_string())
                 .collect::<Vec<String>>()
                 .join(" ")
         );
