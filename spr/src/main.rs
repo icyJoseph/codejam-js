@@ -59,11 +59,6 @@ fn main() {
 
     match &args.mode[..] {
         "create" => {
-            let filename = format!(
-                "{}/{}/{}.{}",
-                cfg.path, cfg.src_dir, args.name, cfg.file_ext
-            );
-
             let target_file = fs::OpenOptions::new()
                 .write(true)
                 .create_new(true)
