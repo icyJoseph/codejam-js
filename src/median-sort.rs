@@ -27,20 +27,21 @@ fn parse_vec<T: std::str::FromStr>() -> Vec<T> {
         .collect()
 }
 
-fn print_ls(ls: &Vec<usize>) -> String {
+fn list_to_string(ls: &Vec<usize>) -> String {
     ls.iter()
         .map(|x| (x + 1).to_string())
         .collect::<Vec<String>>()
         .join(" ")
 }
 
-fn print_triplet(triplet: &(usize, usize, usize)) -> String {
-    format!("{} {} {}", triplet.0 + 1, triplet.1 + 1, triplet.2 + 1)
+fn query(x: usize, y: usize, z: usize) -> usize {
+    println!("{} {} {}", x + 1, y + 1, z + 1);
+    return parse_num::<usize>() - 1;
 }
 
 fn binary_search(body: &Vec<usize>, target: usize) -> usize {
-    let mut lower = 0;
-    let mut upper = body.len() / 2;
+    let lower = 0;
+    let upper = body.len() / 2;
 
     if body.len() == 0 {
         return 1;
@@ -51,9 +52,7 @@ fn binary_search(body: &Vec<usize>, target: usize) -> usize {
     }
 
     if body.len() == 2 {
-        println!("{}", print_triplet(&(body[lower], body[upper], target)));
-
-        let answer = parse_num::<usize>() - 1;
+        let answer = query(body[lower], body[upper], target);
 
         if answer == target {
             return lower + 1;
@@ -64,9 +63,7 @@ fn binary_search(body: &Vec<usize>, target: usize) -> usize {
         }
     }
 
-    println!("{}", print_triplet(&(body[lower], body[upper], target)));
-
-    let answer = parse_num::<usize>() - 1;
+    let answer = query(body[lower], body[upper], target);
 
     if answer == target {
         // target is between lower and upper
@@ -86,11 +83,10 @@ fn binary_search(body: &Vec<usize>, target: usize) -> usize {
 fn main() -> Res<()> {
     let spec = parse_vec::<usize>();
 
-    let T = spec[0]; // total cases
-    let N = spec[1]; // size
-    let Q = spec[2]; // queries
+    let t = spec[0]; // total cases
+    let n = spec[1]; // size
 
-    for case in 0..T {
+    for _ in 0..t {
         let mut head = 0;
 
         let mut body = vec![1];
@@ -98,9 +94,7 @@ fn main() -> Res<()> {
         let mut next = 2;
 
         loop {
-            println!("{}", print_triplet(&(head, body[0], next)));
-
-            let answer = parse_num::<usize>() - 1;
+            let answer = query(head, body[0], next);
 
             if answer == body[0] {
                 let index = binary_search(&body, next);
@@ -115,14 +109,14 @@ fn main() -> Res<()> {
 
             next += 1;
 
-            if next == N {
+            if next == n {
                 break;
             }
         }
 
         body.insert(0, head);
 
-        println!("{}", print_ls(&body));
+        println!("{}", list_to_string(&body));
 
         nxt();
     }
