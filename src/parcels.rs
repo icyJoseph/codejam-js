@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::io;
 
 type Res<T> = Result<T, Box<dyn std::error::Error>>;
@@ -27,66 +28,118 @@ fn parse_vec<T: std::str::FromStr>() -> Vec<T> {
         .collect()
 }
 
-fn m_d(a: (usize, usize), b: (usize, usize)) -> usize {
-    use std::cmp::{max, min};
+fn calc_adj(r: usize, c: usize) -> Vec<Vec<usize>> {
+    let norm = |i: usize, j: usize| c * i + j;
 
-    (max(a.0, b.0) - min(a.0, b.0)) + (max(a.1, b.1) - min(a.1, b.1))
-}
-
-fn calc_distances(r: usize, c: usize, offices: &Vec<(usize, usize)>) -> Vec<usize> {
-    let mut distances = vec![];
+    let mut adj = vec![vec![]; r * c];
 
     for i in 0..r {
         for j in 0..c {
-            let mut distance = None;
-
-            for office in offices.iter() {
-                let d = m_d((i, j), (office.0, office.1));
-
-                match distance {
-                    None => {
-                        distance = Some(d);
-                    }
-                    Some(v) if v > d => {
-                        distance = Some(d);
-                    }
-                    _ => {}
-                }
+            let index = norm(i, j);
+            if i > 0 {
+                adj[index].push(norm(i - 1, j));
             }
-
-            match distance {
-                None => distances.push(r + c),
-                Some(v) => distances.push(v),
+            if j + 1 < c {
+                adj[index].push(norm(i, j + 1));
+            }
+            if i + 1 < r {
+                adj[index].push(norm(i + 1, j));
+            }
+            if j > 0 {
+                adj[index].push(norm(i, j - 1));
             }
         }
     }
 
+    adj
+}
+
+fn bfs(
+    adj: &Vec<Vec<usize>>,
+    distances: &mut Vec<usize>,
+    r: usize,
+    c: usize,
+    sources: &Vec<(usize, usize)>,
+) {
+    let mut visited = vec![false; r * c];
+
+    let mut q = VecDeque::new();
+
+    for (x, y) in sources {
+        let node = x * c + y;
+        visited[node] = true;
+        q.push_back(node);
+    }
+
+    loop {
+        let next = q.pop_front();
+
+        match next {
+            None => {
+                break;
+            }
+            Some(elem) => {
+                for &node in adj[elem].iter() {
+                    if visited[node] {
+                        continue;
+                    }
+
+                    visited[node] = true;
+
+                    distances[node] = distances[elem] + 1;
+                    q.push_back(node);
+                }
+            }
+        }
+    }
+}
+
+fn calc_distances(
+    adj: &Vec<Vec<usize>>,
+    r: usize,
+    c: usize,
+    offices: &Vec<(usize, usize)>,
+) -> Vec<usize> {
+    let mut distances = vec![0; r * c];
+
+    if offices.len() == 0 {
+        return vec![r + c - 2];
+    }
+
+    bfs(&adj, &mut distances, r, c, &offices);
+
     distances
 }
 
-fn search(
+fn bin_search(
+    adj: &Vec<Vec<usize>>,
     distances: Vec<usize>,
     offices: &mut Vec<(usize, usize)>,
     blanks: &Vec<(usize, usize)>,
     r: usize,
     c: usize,
+    look_up: &Vec<(usize, usize, usize)>,
 ) -> usize {
-    // take the middle and check if possible
     if distances.len() == 2 {
-        for distance in distances.iter() {
-            for blank in blanks.iter() {
-                offices.push((blank.0, blank.1));
+        let distance = distances[0];
+        let targets = look_up
+            .into_iter()
+            .filter(|(_, _, dist)| *dist > distance)
+            .map(|(x, y, _)| return (*x as isize, *y as isize))
+            .collect::<Vec<(isize, isize)>>();
 
-                let new_distances = calc_distances(r, c, &offices);
-                let candidate = new_distances.into_iter().max().unwrap();
+        for blank in blanks {
+            let possible = targets.iter().all(|(x, y)| {
+                return (x - blank.0 as isize).abs() + (y - blank.1 as isize).abs()
+                    <= distance as isize;
+            });
 
-                offices.pop();
-
-                if candidate == *distance {
-                    return candidate;
-                }
+            if possible {
+                return distances[0];
             }
         }
+
+        return distances[1];
     }
 
     if distances.len() == 1 {
@@ -96,26 +149,42 @@ fn search(
     let lower = 0;
     let upper = distances.len();
     let middle = (lower + upper) / 2;
-    let pivot = distances[middle];
+    let distance = distances[middle];
 
-    for blank in blanks.iter() {
-        offices.push((blank.0, blank.1));
+    let targets = look_up
+        .into_iter()
+        .filter(|(_, _, dist)| *dist > distance)
+        .map(|(x, y, _)| return (*x as isize, *y as isize))
+        .collect::<Vec<(isize, isize)>>();
 
-        let new_distances = calc_distances(r, c, &offices);
-        let candidate = new_distances.into_iter().max().unwrap();
+    for blank in blanks {
+        let possible = targets.iter().all(|(x, y)| {
+            return (x - blank.0 as isize).abs() + (y - blank.1 as isize).abs()
+                <= distance as isize;
+        });
 
-        offices.pop();
-
-        if candidate == pivot {
-            // possible branch
-            // try to do better
-            return search(distances[0..=middle].to_vec(), offices, blanks, r, c);
+        if possible {
+            return bin_search(
+                &adj,
+                distances[0..=middle].to_vec(),
+                offices,
+                blanks,
+                r,
+                c,
+                &look_up,
+            );
         }
     }
 
-    // not possible
-    // try to do worse
-    return search(distances[middle..].to_vec(), offices, blanks, r, c);
+    return bin_search(
+        &adj,
+        distances[middle..].to_vec(),
+        offices,
+        blanks,
+        r,
+        c,
+        &look_up,
+    );
 }
 
 fn main() -> Res<()> {
@@ -126,27 +195,24 @@ fn main() -> Res<()> {
         let r = rc[0];
         let c = rc[1];
 
-        let mut grid = vec![];
-
         let mut offices = vec![];
         let mut blanks = vec![];
 
         for i in 0..r {
             let next = nxt();
-            let row: Vec<u32> = next
-                .trim()
-                .chars()
-                .map(|x| x.to_digit(10).unwrap())
-                .collect();
 
-            for j in 0..c {
-                if row[j] == 1 {
+            for (j, c) in next.trim().chars().enumerate() {
+                if c == '1' {
                     offices.push((i, j));
                 } else {
                     blanks.push((i, j));
                 }
             }
-            grid.push(row);
+        }
+
+        if blanks.len() == 0 {
+            println!("Case #{}: {}", case, 0);
+            continue;
         }
 
         if r == 1 && c == 1 {
@@ -154,10 +220,22 @@ fn main() -> Res<()> {
             continue;
         }
 
-        let mut distances = calc_distances(r, c, &offices);
-        distances.sort_by(|a, b| a.cmp(&b));
+        let adj = calc_adj(r, c);
 
-        let result = search(distances, &mut offices, &blanks, r, c);
+        let mut distances = calc_distances(&adj, r, c, &offices);
+
+        let mut look_up = vec![];
+
+        for (node, distance) in distances.iter().enumerate() {
+            let x = node / c;
+            let y = node % c;
+            look_up.push((x, y, *distance));
+        }
+
+        distances.sort_by(|a, b| a.cmp(&b));
+        distances.dedup();
+
+        let result = bin_search(&adj, distances, &mut offices, &blanks, r, c, &look_up);
 
         println!("Case #{}: {}", case, result);
     }
