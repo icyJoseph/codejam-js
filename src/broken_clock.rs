@@ -27,67 +27,22 @@ fn parse_vec<T: std::str::FromStr>() -> Vec<T> {
         .collect()
 }
 
-type Time = (Option<u128>, Option<u128>, Option<u128>, Option<u128>);
+type Time = (u128, u128, u128, u128);
 
-fn from_twelve(a: u128, b: u128, c: u128) -> Time {
-    let base = (10u128).pow(9);
-
-    // this means, a is the total number of nanosecs since midnight
-    let _hours = a / (3600 * base);
-    let _minutes = b / (12 * 60 * base);
-    let _seconds = c / (720 * base);
-
-    let expected_minutes = (a % (3600 * base) / (60 * base));
-
-    let expected_seconds = (a % (3600 * base) % (60 * base)) / base;
-
-    let hours = if _hours <= 11 { Some(_hours) } else { None };
-
-    let minutes = if _minutes <= 59 && _minutes == expected_minutes {
-        Some(_minutes)
-    } else {
-        None
-    };
-
-    let seconds = if _seconds <= 59 && _seconds == expected_seconds {
-        Some(_seconds)
-    } else {
-        None
-    };
-
-    let _nano = if seconds.is_none() {
-        None
-    } else {
-        Some((a % (3600 * base) % (60 * base)) % base)
-    };
-
-    (hours, minutes, seconds, _nano)
-}
-
-fn verify(head: Time) -> bool {
-    if head.0.is_some() {
-        if head.1.is_some() {
-            if head.2.is_some() {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-fn search(spec: &Vec<u128>, permutation: &mut Vec<usize>, chosen: &mut Vec<bool>) -> Option<Time> {
+fn search(
+    spec: &Vec<u128>,
+    permutation: &mut Vec<usize>,
+    chosen: &mut Vec<bool>,
+    reps: &Vec<Time>,
+) -> Option<usize> {
     if permutation.len() == 3 {
         let a = spec[permutation[0]];
         let b = spec[permutation[1]];
         let c = spec[permutation[2]];
 
-        let time = from_twelve(a, b, c);
-
-        if verify(time) {
-            return Some(time);
-        } else {
-            return None;
-        }
+        return reps
+            .iter()
+            .position(|(h, m, s, _)| *h == a && *m == b && *s == c);
     } else {
         for i in 0..3 {
             if chosen[i] {
@@ -96,7 +51,7 @@ fn search(spec: &Vec<u128>, permutation: &mut Vec<usize>, chosen: &mut Vec<bool>
 
             chosen[i] = true;
             permutation.push(i);
-            let res = search(spec, permutation, chosen);
+            let res = search(spec, permutation, chosen, reps);
             if res.is_none() {
                 chosen[i] = false;
                 permutation.pop();
@@ -108,20 +63,53 @@ fn search(spec: &Vec<u128>, permutation: &mut Vec<usize>, chosen: &mut Vec<bool>
     return None;
 }
 
+fn to_rep(time: u128) -> Time {
+    let hours = time / 3600;
+    let minutes = (time % 3600) / 60;
+    let seconds = (time % 3600) % 60;
+
+    (hours, minutes, seconds, 0)
+}
+
+fn to_ticks(time: u128) -> Time {
+    let base = (10u128).pow(9);
+    let total_ns = base * time;
+
+    let one_rev = 3600 * 12 * base;
+
+    (
+        total_ns % one_rev,
+        12 * total_ns % one_rev,
+        720 * total_ns % one_rev,
+        0,
+    )
+}
+
+fn time_dict() -> Vec<Time> {
+    let mut ticks = vec![];
+
+    for second in 0..12 * 60 * 60 {
+        let rep = to_ticks(second);
+        ticks.push(rep);
+    }
+
+    ticks
+}
+
 fn main() -> Res<()> {
     let n = parse_num::<u32>();
+
+    let reps = time_dict();
+
     for case in 1..=n {
         let spec = parse_vec::<u128>();
 
         let mut chosen = vec![false; 6];
         let mut permutation: Vec<usize> = vec![];
 
-        match search(&spec, &mut permutation, &mut chosen) {
+        match search(&spec, &mut permutation, &mut chosen, &reps) {
             Some(time) => {
-                let h = time.0.unwrap();
-                let m = time.1.unwrap();
-                let s = time.2.unwrap();
-                let n = time.3.unwrap();
+                let (h, m, s, n) = to_rep(time as u128);
                 println!("Case #{}: {} {} {} {}", case, h, m, s, n);
             }
             None => panic!("No time found"),
