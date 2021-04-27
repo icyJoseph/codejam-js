@@ -36,23 +36,17 @@ fn to_rep(time: u128) -> Time {
     let hours = time / 3600;
     let minutes = (time % 3600) / 60;
     let seconds = (time % 3600) % 60;
+    let nano = ((time % 3600) % 60) / NS;
 
-    (hours, minutes, seconds, 0)
+    (hours, minutes, seconds, nano)
 }
 
-fn normalize(vec: &Vec<u128>) -> Vec<u128> {
-    let mut ret = vec.to_vec();
-    ret.sort_by(|a, b| a.cmp(&b));
-
-    let one = (ONE_REV - ret[2]) + ret[0];
-    let two = ret[1] - ret[0];
-    let three = ret[2] - ret[1];
-
-    let mut angles = vec![one, two, three];
-
-    angles.sort_by(|a, b| a.cmp(&b));
-
-    angles
+fn normalize(src: &Vec<u128>) -> Vec<u128> {
+    vec![
+        0,
+        (src[1] + ONE_REV - src[0]) % ONE_REV,
+        (src[2] + ONE_REV - src[1]) % ONE_REV,
+    ]
 }
 
 fn to_ticks(second: u128) -> Vec<u128> {
@@ -78,6 +72,43 @@ fn time_dict() -> Vec<Vec<u128>> {
     ticks
 }
 
+fn search(
+    spec: &Vec<u128>,
+    permutation: &mut Vec<usize>,
+    chosen: &mut Vec<bool>,
+    reps: &Vec<Vec<u128>>,
+) -> Option<usize> {
+    if permutation.len() == 3 {
+        let a = spec[permutation[0]];
+        let b = spec[permutation[1]];
+        let c = spec[permutation[2]];
+
+        let d = normalize(&vec![a, b, c]);
+
+        return reps.iter().position(|rep| *rep == d);
+    } else {
+        for i in 0..3 {
+            if chosen[i] {
+                continue;
+            }
+
+            chosen[i] = true;
+            permutation.push(i);
+
+            let res = search(spec, permutation, chosen, reps);
+
+            if res.is_none() {
+                chosen[i] = false;
+                permutation.pop();
+            } else {
+                return res;
+            }
+        }
+    }
+
+    return None;
+}
+
 fn main() -> Res<()> {
     let n = parse_num::<u32>();
 
@@ -86,17 +117,19 @@ fn main() -> Res<()> {
     for case in 1..=n {
         let spec = parse_vec::<u128>();
 
-        let order_spec = normalize(&spec);
+        let mut chosen = vec![false; 6];
+        let mut permutation: Vec<usize> = vec![];
 
-        match reps.iter().position(|rep| {
-            rep[0] == order_spec[0] && rep[1] == order_spec[1] && rep[2] == order_spec[2]
-        }) {
+        match search(&spec, &mut permutation, &mut chosen, &reps) {
             Some(time) => {
                 let (h, m, s, n) = to_rep(time as u128);
                 println!("Case #{}: {} {} {} {}", case, h, m, s, n);
             }
-            None => panic!("No time found"),
+            None => {
+                println!("Case #{}: _", case);
+            }
         }
     }
+
     Ok(())
 }
