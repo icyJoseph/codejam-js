@@ -27,7 +27,7 @@ fn parse_vec<T: std::str::FromStr>() -> Vec<T> {
         .collect()
 }
 
-type Time = (u128, u128, u128, u128);
+type Time = (u128, u128, u128);
 
 const NS: u128 = 1_000_000_000;
 const ONE_REV: u128 = 3600 * 12 * NS;
@@ -36,9 +36,8 @@ fn to_rep(time: u128) -> Time {
     let hours = time / 3600;
     let minutes = (time % 3600) / 60;
     let seconds = (time % 3600) % 60;
-    let nano = ((time % 3600) % 60) / NS;
 
-    (hours, minutes, seconds, nano)
+    (hours, minutes, seconds)
 }
 
 fn normalize(src: &Vec<u128>) -> Vec<u128> {
@@ -77,15 +76,33 @@ fn search(
     permutation: &mut Vec<usize>,
     chosen: &mut Vec<bool>,
     reps: &Vec<Vec<u128>>,
-) -> Option<usize> {
+) -> Option<(usize, u128)> {
     if permutation.len() == 3 {
         let a = spec[permutation[0]];
         let b = spec[permutation[1]];
         let c = spec[permutation[2]];
 
-        let d = normalize(&vec![a, b, c]);
+        let mut offset = 0;
 
-        return reps.iter().position(|rep| *rep == d);
+        for h in 0..11 {
+            let factor = h * NS + ((b + ONE_REV - a) % ONE_REV + NS) % NS;
+
+            if factor % 11 == 0 {
+                offset = factor / 11;
+                break;
+            }
+        }
+
+        let d = normalize(&vec![
+            (a + ONE_REV - (offset % ONE_REV)) % ONE_REV,
+            (b + ONE_REV - (12 * offset % ONE_REV)) % ONE_REV,
+            (c + ONE_REV - (720 * offset % ONE_REV)) % ONE_REV,
+        ]);
+
+        match reps.iter().position(|rep| *rep == d) {
+            Some(index) => return Some((index, offset)),
+            None => return None,
+        };
     } else {
         for i in 0..3 {
             if chosen[i] {
@@ -121,8 +138,8 @@ fn main() -> Res<()> {
         let mut permutation: Vec<usize> = vec![];
 
         match search(&spec, &mut permutation, &mut chosen, &reps) {
-            Some(time) => {
-                let (h, m, s, n) = to_rep(time as u128);
+            Some((time, n)) => {
+                let (h, m, s) = to_rep(time as u128);
                 println!("Case #{}: {} {} {} {}", case, h, m, s, n);
             }
             None => {
