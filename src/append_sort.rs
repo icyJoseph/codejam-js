@@ -1,3 +1,4 @@
+use std::char::from_digit;
 use std::io;
 
 type Res<T> = Result<T, Box<dyn std::error::Error>>;
@@ -27,28 +28,85 @@ fn parse_vec<T: std::str::FromStr>() -> Vec<T> {
         .collect()
 }
 
-fn mag(n: u32) -> u32 {
-    let mut m = 1;
+fn to_digits(n: u128) -> Vec<char> {
+    n.to_string().chars().collect()
+}
 
-    loop {
-        if n < ((10u32).pow(m)) {
-            break;
-        }
-        m += 1
+fn left_gt_right(left: &Vec<char>, right: &Vec<char>) -> bool {
+    if right.len() > left.len() {
+        return false;
+    } else if left.len() > right.len() {
+        return true;
     }
 
-    m
+    for i in 0..left.len() {
+        if right[i] == left[i] {
+            continue;
+        } else if right[i] > left[i] {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    return false;
 }
 
-fn to_digits(n: u32) -> Vec<u32> {
-    n.to_string()
-        .chars()
-        .map(|c| c.to_digit(10).unwrap())
-        .collect()
+fn add_one(vec: &Vec<char>) -> Vec<char> {
+    let mut copy = vec.to_vec();
+
+    let mut carry = 1;
+
+    for i in (0..copy.len()).rev() {
+        let num = copy[i];
+
+        if num == '9' && carry == 1 {
+            copy[i] = '0';
+            carry = 1;
+        } else {
+            copy[i] = from_digit(num.to_digit(10).unwrap() + carry, 10).unwrap();
+            carry = 0;
+        }
+    }
+
+    copy
 }
 
-fn to_number(digits: &Vec<u32>) -> u32 {
-    digits.iter().fold(0, |prev, curr| 10 * prev + curr)
+fn overtake(curr: &Vec<char>, prev: &Vec<char>) -> Vec<char> {
+    let mut curr_digits = curr.to_vec();
+
+    let diff = prev.len() - curr_digits.len();
+
+    if diff == 0 {
+        curr_digits.push('0');
+        return curr_digits;
+    }
+
+    // push diff 0's -> if larger then prev, return
+    for _ in 0..diff {
+        curr_digits.push('0');
+    }
+
+    if left_gt_right(&curr_digits, prev) {
+        return curr_digits;
+    }
+
+    let mut nines = curr.to_vec();
+
+    // push diff 9's ->
+    for _ in 0..diff {
+        nines.push('9');
+    }
+
+    if left_gt_right(&nines, prev) {
+        return add_one(&prev);
+    } else {
+        let mut next = curr.to_vec();
+        for _ in 0..diff + 1 {
+            next.push('0');
+        }
+        return next;
+    }
 }
 
 fn main() -> Res<()> {
@@ -56,36 +114,30 @@ fn main() -> Res<()> {
     for case in 1..=n {
         let total = parse_num::<usize>();
 
-        let mut list = parse_vec::<u32>();
+        let num_list = parse_vec::<u128>();
+
+        let mut list = num_list
+            .iter()
+            .map(|&x| to_digits(x))
+            .collect::<Vec<Vec<char>>>();
 
         let mut changes = 0;
 
         for index in 1..total {
-            let prev = list[index - 1];
-            let curr = list[index];
+            let prev = list[index - 1].to_vec();
+            let curr = list[index].to_vec();
 
-            if curr > prev {
+            if left_gt_right(&curr, &prev) {
                 continue;
             }
 
-            let mut next = curr;
-            let mut i = 0;
-            let mut j = 1;
+            let next = overtake(&curr, &prev);
 
-            loop {
-                if i == (10u32).pow(j) {
-                    i = 0;
-                    j += 1;
-                }
-                next = curr * (10u32).pow(j) + i;
-                i += 1;
-                if next > prev {
-                    changes += to_digits(next).len() - to_digits(curr).len();
-                    list[index] = next;
-                    break;
-                }
-            }
+            changes += next.len() - curr.len();
+
+            list[index] = next;
         }
+
         println!("Case #{}: {}", case, changes);
     }
     Ok(())
