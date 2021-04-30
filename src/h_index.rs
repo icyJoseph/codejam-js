@@ -41,26 +41,35 @@ fn main() -> Res<()> {
         let cits = parse_vec::<usize>();
 
         let mut history = vec![];
-        let mut h_index = 0;
-        let mut q = vec![0];
+        let mut h_index = 1;
+
+        use std::cmp::Reverse;
+        use std::collections::BinaryHeap;
+
+        let mut q = BinaryHeap::new();
 
         for c in cits {
-            if q.len() <= c {
-                for _ in q.len()..=c {
-                    q.push(q.len());
+            if c > h_index {
+                q.push(Reverse(c));
+            }
+
+            loop {
+                match q.peek() {
+                    Some(Reverse(n)) if n <= &h_index => {
+                        q.pop();
+                    }
+                    Some(Reverse(n)) if n >= &h_index => {
+                        break;
+                    }
+                    Some(_) => continue,
+                    None => break,
                 }
             }
 
-            if c > h_index {
-                for i in h_index..=c {
-                    if q[i] > 0 {
-                        q[i] -= 1;
-                        if q[i] == 0 {
-                            h_index = i;
-                        }
-                    }
-                }
+            if q.len() >= h_index + 1 {
+                h_index += 1;
             }
+
             history.push(h_index);
         }
 
