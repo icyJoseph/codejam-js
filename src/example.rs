@@ -27,6 +27,13 @@ fn parse_vec<T: std::str::FromStr>() -> Vec<T> {
         .collect()
 }
 
+fn string_vec<T: std::string::ToString>(vec: &Vec<T>, separator: &str) -> String {
+    vec.iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>()
+        .join(separator)
+}
+
 fn main() -> Res<()> {
     let n = parse_num::<u32>();
     for case in 1..=n {
