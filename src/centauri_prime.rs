@@ -3,7 +3,20 @@ use std::io;
 fn main() -> Res<()> {
     let n = parse_num::<u32>();
     for case in 1..=n {
-        println!("Case #{}: {}", case, 0);
+        let line = nxt();
+        let kingdom = line.trim();
+
+        match kingdom.to_lowercase().chars().last() {
+            Some(n) if ['a', 'e', 'i', 'o', 'u'].contains(&n) => {
+                println!("Case #{}: {} is ruled by {}.", case, kingdom, "Alice");
+            }
+            Some('y') => {
+                println!("Case #{}: {} is ruled by {}.", case, kingdom, "nobody");
+            }
+            _ => {
+                println!("Case #{}: {} is ruled by {}.", case, kingdom, "Bob");
+            }
+        }
     }
 
     Ok(())
