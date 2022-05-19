@@ -1,5 +1,17 @@
 use std::io;
 
+/*
+5 2 4 3 1
+
+Alex 5 3 1 -> (lr inc) -> 1 3 5
+
+Bob 2 4 -> (lr dec) -> 4 2
+
+[A, B, B, A, A]
+[1, 4, 2, 3, 5]
+
+*/
+
 enum Position {
     Alex,
     Bob,
