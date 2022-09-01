@@ -8,7 +8,7 @@ Solutions to Kick Start Problems, Codeforces and CodeJam are all mixed up in the
 
 ## Quick start
 
-In this competitions speed is everything, that's why there's a file, `src/example.src`, which can be used to start solving a problem.
+In this competitions speed is everything, that's why there's a file, `template/src/main.src`, which can be used to start solving a problem.
 
 It contains number parsing, and vector parsing for `i32`, `usize`, `u32`, etc. All generics that implement `FromStr`.
 
@@ -49,48 +49,26 @@ fn main() -> Res<()> {
 }
 ```
 
-## `spr`
+## Creating a new problem
 
-`spr` is a Rust CLI to simplify and speed up problem solving.
-
-It has two modes, `create` and `run`. The default mode is to `run`.
-
-### Compiling
-
-From the root of the project:
+Enter to the `src` folder and run:
 
 ```
-cd spr
+cargo generate --path ./template --name <problem_name> --force
 ```
 
-Build the binary:
+## Solving a problem
+
+Place your solution inside the `main` function. Create as many helpers as necessary.
+
+## Run a problem
+
+From the problem directory:
 
 ```
-cargo build --release
+cargo build --release --target-dir .
+./release/<problem_name> < <problem_name>.in
 ```
-
-### Creating a new problem
-
-From the root of the project:
-
-```
-./spr/target/release/spr <problem-name> -m create
-```
-
-This copies the contents of `src/example.rs` to `src/<problem-name>.rs` and also creates a test file `tests/<problem-name>.in`.
-
-### Run a problem
-
-From the root of the project:
-
-```
-./spr/target/release/spr <problem-name>
-```
-
-This runs `rustc src/<problem-name>.rs --out-dir rls` and then pipes `tests/<problem-name>.in` to `./rls/<problem-name>`.
-
-- If an error should occur at any stage, the error message shows in the `stdout`.
-- If all goes well, then your program output shows in the `stdin`.
 
 ## Legacy
 

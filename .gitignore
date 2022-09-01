@@ -4,13 +4,12 @@ utils
 *.py
 src/main.rs
 Cargo.lock
-Cargo.toml
 target
 rust_builds
 tests/overrandomized.in
 rls
-!spr/Cargo.toml
-!spr/Cargo.lock
 !src/**/Cargo.toml
 !template/Cargo.toml
 .vscode/
+.rustc_info.json
+release
