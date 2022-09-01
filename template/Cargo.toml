@@ -1,0 +1,13 @@
+[package]
+authors = ["Joseph Chamochumbi <sephxd1234@gmail.com>"]
+edition = "2018"
+name = "{{project-name}}"
+version = "0.1.0"
+  
+# See more keys and their definitions at https://doc.rust-lang.org/car
+
+
+
+
+
+

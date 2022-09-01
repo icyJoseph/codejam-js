@@ -12,4 +12,5 @@ rls
 !spr/Cargo.toml
 !spr/Cargo.lock
 !src/**/Cargo.toml
+!template/Cargo.toml
 .vscode/
