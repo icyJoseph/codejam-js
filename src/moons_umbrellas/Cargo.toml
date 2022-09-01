@@ -1,0 +1,12 @@
+[package]
+edition = "2021"
+name = "moons_umbrellas"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[[bin]]
+name = "moons_umbrellas"
+path = "src/moons_umbrellas.rs"

@@ -11,4 +11,5 @@ tests/overrandomized.in
 rls
 !spr/Cargo.toml
 !spr/Cargo.lock
+!src/**/Cargo.toml
 .vscode/

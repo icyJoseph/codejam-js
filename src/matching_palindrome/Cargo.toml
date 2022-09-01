@@ -1,0 +1,12 @@
+[package]
+edition = "2021"
+name = "matching_palindrome"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[[bin]]
+name = "matching_palindrome"
+path = "src/matching_palindrome.rs"

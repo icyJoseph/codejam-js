@@ -1,0 +1,12 @@
+[package]
+edition = "2021"
+name = "d1000000"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[[bin]]
+name = "d1000000"
+path = "src/d1000000.rs"

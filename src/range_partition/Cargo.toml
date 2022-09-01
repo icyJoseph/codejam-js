@@ -1,0 +1,12 @@
+[package]
+edition = "2021"
+name = "range_partition"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[[bin]]
+name = "range_partition"
+path = "src/range_partition.rs"

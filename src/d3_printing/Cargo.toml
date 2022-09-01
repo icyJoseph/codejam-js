@@ -1,0 +1,12 @@
+[package]
+edition = "2021"
+name = "d3_printing"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[[bin]]
+name = "d3_printing"
+path = "src/d3_printing.rs"

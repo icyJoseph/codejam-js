@@ -1,0 +1,12 @@
+[package]
+edition = "2021"
+name = "increasing_substring"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[[bin]]
+name = "increasing_substring"
+path = "src/increasing_substring.rs"
