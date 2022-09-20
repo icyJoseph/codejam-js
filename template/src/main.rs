@@ -37,8 +37,12 @@ fn parse_vec<T: std::str::FromStr>() -> Vec<T> {
         .collect()
 }
 
+fn parse_string_vec() -> Vec<String> {
+    nxt().split_whitespace().map(|x| x.to_string()).collect()
+}
+
 #[allow(dead_code)]
-fn string_vec<T: std::string::ToString>(vec: &Vec<T>, separator: &str) -> String {
+fn vec_to_string<T: std::string::ToString>(vec: &[T], separator: &str) -> String {
     vec.iter()
         .map(|x| x.to_string())
         .collect::<Vec<String>>()
